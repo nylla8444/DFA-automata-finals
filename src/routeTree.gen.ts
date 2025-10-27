@@ -11,7 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TestRouteImport } from './routes/test'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as SubrouteTestRouteImport } from './routes/subroute.test'
+import { Route as SubrouteExampleRouteImport } from './routes/subroute.example'
 
 const TestRoute = TestRouteImport.update({
   id: '/test',
@@ -23,40 +23,40 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SubrouteTestRoute = SubrouteTestRouteImport.update({
-  id: '/subroute/test',
-  path: '/subroute/test',
+const SubrouteExampleRoute = SubrouteExampleRouteImport.update({
+  id: '/subroute/example',
+  path: '/subroute/example',
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/test': typeof TestRoute
-  '/subroute/test': typeof SubrouteTestRoute
+  '/subroute/example': typeof SubrouteExampleRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/test': typeof TestRoute
-  '/subroute/test': typeof SubrouteTestRoute
+  '/subroute/example': typeof SubrouteExampleRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/test': typeof TestRoute
-  '/subroute/test': typeof SubrouteTestRoute
+  '/subroute/example': typeof SubrouteExampleRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/test' | '/subroute/test'
+  fullPaths: '/' | '/test' | '/subroute/example'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/test' | '/subroute/test'
-  id: '__root__' | '/' | '/test' | '/subroute/test'
+  to: '/' | '/test' | '/subroute/example'
+  id: '__root__' | '/' | '/test' | '/subroute/example'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   TestRoute: typeof TestRoute
-  SubrouteTestRoute: typeof SubrouteTestRoute
+  SubrouteExampleRoute: typeof SubrouteExampleRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -75,11 +75,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/subroute/test': {
-      id: '/subroute/test'
-      path: '/subroute/test'
-      fullPath: '/subroute/test'
-      preLoaderRoute: typeof SubrouteTestRouteImport
+    '/subroute/example': {
+      id: '/subroute/example'
+      path: '/subroute/example'
+      fullPath: '/subroute/example'
+      preLoaderRoute: typeof SubrouteExampleRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -88,7 +88,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   TestRoute: TestRoute,
-  SubrouteTestRoute: SubrouteTestRoute,
+  SubrouteExampleRoute: SubrouteExampleRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
