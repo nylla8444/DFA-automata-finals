@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { DFAEngine, binaryEndingIn01, evenNumberOfZeros } from '../lib/dfa'
+import { DFASimulator, Navigation } from '../components'
 import { useState } from 'react'
 
 export const Route = createFileRoute('/')({
@@ -9,6 +10,7 @@ export const Route = createFileRoute('/')({
 function App() {
   const [input, setInput] = useState('')
   const [selectedExample, setSelectedExample] = useState<'binary01' | 'evenZeros'>('binary01')
+  const [showSimulator, setShowSimulator] = useState(false)
   
   const dfa = selectedExample === 'binary01' ? binaryEndingIn01 : evenNumberOfZeros
   const engine = new DFAEngine(dfa)
@@ -16,8 +18,9 @@ function App() {
   const result = input ? engine.processString(input) : null
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <Navigation />
+      <div className="max-w-4xl mx-auto px-8 pb-8">
         <header className="text-center mb-12">
           <h1 className="text-5xl font-bold text-indigo-900 mb-4">
             DFA Visualization Tool
@@ -29,7 +32,7 @@ function App() {
 
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-            Phase 1: Core Engine Demo ✅
+            Interactive DFA Simulator ✨
           </h2>
           
           <div className="mb-6">
@@ -91,7 +94,32 @@ function App() {
             />
           </div>
 
-          {result && (
+          {/* Toggle between quick test and step-by-step simulator */}
+          <div className="mb-6 flex gap-3">
+            <button
+              onClick={() => setShowSimulator(false)}
+              className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+                !showSimulator
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              Quick Test
+            </button>
+            <button
+              onClick={() => setShowSimulator(true)}
+              className={`flex-1 px-4 py-2 rounded-lg font-medium transition-colors ${
+                showSimulator
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              Step-by-Step Simulator
+            </button>
+          </div>
+
+          {/* Show either quick result or simulator */}
+          {!showSimulator && result && (
             <div className={`p-6 rounded-lg ${
               result.accepted 
                 ? 'bg-green-50 border-2 border-green-500' 
@@ -121,6 +149,10 @@ function App() {
               </div>
             </div>
           )}
+
+          {showSimulator && (
+            <DFASimulator dfa={dfa} inputString={input} />
+          )}
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl p-8">
@@ -133,8 +165,8 @@ function App() {
               <span className="text-gray-700">Phase 1: Core DFA Engine & Types</span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-2xl">⏳</span>
-              <span className="text-gray-500">Phase 2: Visualization Components</span>
+              <span className="text-2xl">✅</span>
+              <span className="text-gray-700">Phase 2: Visualization Components</span>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-2xl">⏳</span>
