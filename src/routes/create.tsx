@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Navigation } from '../components/Navigation/Navigation'
-import { DFAViewer } from '../components/DFAViewer/DFAViewer'
+import { DFAEditor } from '../components/DFAEditor/DFAEditor'
 import { saveDFA } from '../utils/dfa-storage'
 import { createEmptyDFA } from '../utils/dfa-engine'
+import type { DFA } from '../types/dfa'
 
 export const Route = createFileRoute('/create')({
   component: CreatePage,
@@ -16,7 +17,7 @@ function CreatePage() {
   const [saving, setSaving] = useState(false)
 
   // Start with empty DFA
-  const [dfa] = useState(() => createEmptyDFA())
+  const [dfa, setDFA] = useState<DFA>(() => createEmptyDFA())
 
   const handleSave = () => {
     if (!name.trim()) {
@@ -86,12 +87,12 @@ function CreatePage() {
 
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-            Visual Editor (Coming Soon)
+            Visual Editor
           </h2>
           <p className="text-gray-600 mb-4">
-            Phase 4 will add interactive editing. For now, viewing the empty DFA structure.
+            Click "Add State" to start building your DFA. You can drag states to reposition them.
           </p>
-          <DFAViewer dfa={dfa} />
+          <DFAEditor initialDFA={dfa} onChange={setDFA} />
         </div>
 
         <div className="flex gap-4 justify-end">

@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate, useParams } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { Navigation } from '../components/Navigation/Navigation'
-import { DFAViewer } from '../components/DFAViewer/DFAViewer'
+import { DFAEditor } from '../components/DFAEditor/DFAEditor'
 import { getDFAById, updateDFA } from '../utils/dfa-storage'
 import type { SavedDFA } from '../utils/dfa-storage'
+import type { DFA } from '../types/dfa'
 
 export const Route = createFileRoute('/edit/$id')({
   component: EditPage,
@@ -13,6 +14,7 @@ function EditPage() {
   const { id } = useParams({ from: '/edit/$id' })
   const navigate = useNavigate()
   const [savedDFA, setSavedDFA] = useState<SavedDFA | null>(null)
+  const [currentDFA, setCurrentDFA] = useState<DFA | null>(null)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(true)
@@ -26,13 +28,14 @@ function EditPage() {
       return
     }
     setSavedDFA(dfa)
+    setCurrentDFA(dfa.dfa)
     setName(dfa.name)
     setDescription(dfa.description)
     setLoading(false)
   }, [id, navigate])
 
   const handleSave = () => {
-    if (!name.trim() || !savedDFA) {
+    if (!name.trim() || !currentDFA) {
       alert('Please enter a name for your DFA')
       return
     }
@@ -40,7 +43,7 @@ function EditPage() {
     setSaving(true)
     
     try {
-      const updated = updateDFA(id, name, description, savedDFA.dfa)
+      const updated = updateDFA(id, name, description, currentDFA)
       if (updated) {
         alert(`DFA "${updated.name}" updated successfully!`)
         navigate({ to: '/view/$id', params: { id } })
@@ -55,7 +58,7 @@ function EditPage() {
     }
   }
 
-  if (loading || !savedDFA) {
+  if (loading || !savedDFA || !currentDFA) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
         <Navigation />
@@ -115,12 +118,12 @@ function EditPage() {
 
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-            Visual Editor (Coming in Phase 4)
+            Visual Editor
           </h2>
           <p className="text-gray-600 mb-4">
-            Interactive editing will be available in Phase 4. For now, you can update the name and description.
+            Edit your DFA visually. Drag states to reposition, add/remove states and transitions.
           </p>
-          <DFAViewer dfa={savedDFA.dfa} />
+          <DFAEditor initialDFA={currentDFA} onChange={setCurrentDFA} />
         </div>
 
         <div className="flex gap-4 justify-end">

@@ -144,7 +144,7 @@ export function DFASimulator({ dfa, inputString }: DFASimulatorProps) {
         visitedStateIds={visitedStateIds}
         highlightedTransitionId={highlightedTransitionId}
         visitedTransitionIds={visitedTransitionIds}
-        height={400}
+        height={600}
       />
 
       {/* Step Information */}

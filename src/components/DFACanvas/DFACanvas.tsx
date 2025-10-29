@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { DFA } from '../../types/dfa'
-import { 
+import {
   calculateCircularLayout,
-  calculateSelfLoopPath,
 } from '../../utils/layout'
 
 interface DFACanvasProps {
@@ -33,15 +32,31 @@ export function DFACanvas({
   const [positions, setPositions] = useState<Map<string, { x: number; y: number }>>(new Map())
   const stateRadius = 30
 
-  // Calculate circular layout when DFA changes
+  // Use saved positions from state data, or calculate circular layout as fallback
   useEffect(() => {
-    const newPositions = calculateCircularLayout(
-      dfa.states.map(s => s.id),
-      dfa.initialStateId,
-      width,
-      height,
-    )
-    setPositions(newPositions)
+    const newPositions = new Map<string, { x: number; y: number }>()
+    let hasSavedPositions = false
+    
+    // Check if states have saved positions
+    dfa.states.forEach(state => {
+      if (state.x !== undefined && state.y !== undefined && state.x !== 0 && state.y !== 0) {
+        newPositions.set(state.id, { x: state.x, y: state.y })
+        hasSavedPositions = true
+      }
+    })
+    
+    // If no saved positions, calculate circular layout
+    if (!hasSavedPositions || newPositions.size !== dfa.states.length) {
+      const calculatedPositions = calculateCircularLayout(
+        dfa.states.map(s => s.id),
+        dfa.initialStateId,
+        width,
+        height,
+      )
+      setPositions(calculatedPositions)
+    } else {
+      setPositions(newPositions)
+    }
   }, [dfa, width, height])
 
   if (positions.size === 0) {
@@ -162,7 +177,13 @@ export function DFACanvas({
             const groupKey = `${transition.fromStateId}-${transition.toStateId}-${transition.symbol}`
 
             if (isSelfLoop) {
-              const selfLoopPath = calculateSelfLoopPath(fromPos.x, fromPos.y, stateRadius)
+              // Self-loop - same as editor
+              const loopRadius = stateRadius * 1.5
+              const selfLoopPath = `M ${fromPos.x - stateRadius * 0.5} ${fromPos.y - stateRadius * 0.7} 
+                           C ${fromPos.x - loopRadius * 1.2} ${fromPos.y - loopRadius * 1.5}
+                             ${fromPos.x + loopRadius * 1.2} ${fromPos.y - loopRadius * 1.5}
+                             ${fromPos.x + stateRadius * 0.5} ${fromPos.y - stateRadius * 0.7}`
+              
               return (
                 <g key={groupKey}>
                   <path
@@ -175,8 +196,8 @@ export function DFACanvas({
                   />
                   {/* Label with background */}
                   <rect
-                    x={fromPos.x + 25}
-                    y={fromPos.y - 68}
+                    x={fromPos.x - 15}
+                    y={fromPos.y - loopRadius * 1.7 - 10}
                     width={30}
                     height={20}
                     fill="white"
@@ -185,8 +206,8 @@ export function DFACanvas({
                     rx="3"
                   />
                   <text
-                    x={fromPos.x + 40}
-                    y={fromPos.y - 55}
+                    x={fromPos.x}
+                    y={fromPos.y - loopRadius * 1.7 + 4}
                     fontSize="14"
                     fontWeight="600"
                     fill={strokeColor}
@@ -199,37 +220,93 @@ export function DFACanvas({
               )
             }
 
-            // Calculate simple curved path
+            // Calculate path
             const dx = toPos.x - fromPos.x
             const dy = toPos.y - fromPos.y
             const distance = Math.sqrt(dx * dx + dy * dy)
             const unitDx = dx / distance
             const unitDy = dy / distance
 
-            // Start and end at edge of circles
+            // Check if there's a reverse transition
+            const hasReverseTransition = dfa.transitions.some(
+              t => t.fromStateId === transition.toStateId && t.toStateId === transition.fromStateId
+            )
+
+            if (hasReverseTransition) {
+              // Use curved path for bidirectional arrows
+              const perpDx = -unitDy
+              const perpDy = unitDx
+              const curveOffset = 25  // How much to curve
+
+              const startX = fromPos.x + unitDx * stateRadius
+              const startY = fromPos.y + unitDy * stateRadius
+              const endX = toPos.x - unitDx * stateRadius
+              const endY = toPos.y - unitDy * stateRadius
+
+              // Control point for quadratic curve, offset to the side
+              const midX = (fromPos.x + toPos.x) / 2 + perpDx * curveOffset
+              const midY = (fromPos.y + toPos.y) / 2 + perpDy * curveOffset
+
+              const curvePath = `M ${startX} ${startY} Q ${midX} ${midY} ${endX} ${endY}`
+
+              // Label position along the curve
+              const t = 0.5  // Midpoint of curve
+              const labelX = (1 - t) * (1 - t) * startX + 2 * (1 - t) * t * midX + t * t * endX
+              const labelY = (1 - t) * (1 - t) * startY + 2 * (1 - t) * t * midY + t * t * endY
+
+              return (
+                <g key={groupKey}>
+                  <path
+                    d={curvePath}
+                    fill="none"
+                    stroke={strokeColor}
+                    strokeWidth={strokeWidth}
+                    markerEnd={markerEnd}
+                    className="transition-all duration-300"
+                  />
+                  
+                  {/* Label with clean background */}
+                  <rect
+                    x={labelX - 20}
+                    y={labelY - 10}
+                    width={40}
+                    height={20}
+                    fill="white"
+                    stroke={isHighlighted ? '#3b82f6' : '#e5e7eb'}
+                    strokeWidth={isHighlighted ? '2' : '1'}
+                    rx="3"
+                  />
+                  <text
+                    x={labelX}
+                    y={labelY + 4}
+                    fontSize="14"
+                    fontWeight="600"
+                    fill={strokeColor}
+                    textAnchor="middle"
+                    className="transition-all duration-300"
+                  >
+                    {transition.symbol}
+                  </text>
+                </g>
+              )
+            }
+
+            // Single direction - use straight line
             const startX = fromPos.x + unitDx * stateRadius
             const startY = fromPos.y + unitDy * stateRadius
             const endX = toPos.x - unitDx * stateRadius
             const endY = toPos.y - unitDy * stateRadius
 
-            // Simple quadratic curve control point (slight curve)
             const midX = (startX + endX) / 2
             const midY = (startY + endY) / 2
-            const curvature = 0.15
-            const controlX = midX - unitDy * distance * curvature
-            const controlY = midY + unitDx * distance * curvature
-
-            const path = `M ${startX} ${startY} Q ${controlX} ${controlY} ${endX} ${endY}`
-            
-            // Label at curve midpoint
-            const labelX = 0.25 * startX + 0.5 * controlX + 0.25 * endX
-            const labelY = 0.25 * startY + 0.5 * controlY + 0.25 * endY
 
             return (
               <g key={groupKey}>
-                <path
-                  d={path}
-                  fill="none"
+                <line
+                  x1={startX}
+                  y1={startY}
+                  x2={endX}
+                  y2={endY}
                   stroke={strokeColor}
                   strokeWidth={strokeWidth}
                   markerEnd={markerEnd}
@@ -238,8 +315,8 @@ export function DFACanvas({
                 
                 {/* Label with clean background */}
                 <rect
-                  x={labelX - 20}
-                  y={labelY - 10}
+                  x={midX - 20}
+                  y={midY - 10}
                   width={40}
                   height={20}
                   fill="white"
@@ -248,8 +325,8 @@ export function DFACanvas({
                   rx="3"
                 />
                 <text
-                  x={labelX}
-                  y={labelY + 4}
+                  x={midX}
+                  y={midY + 4}
                   fontSize="14"
                   fontWeight="600"
                   fill={strokeColor}

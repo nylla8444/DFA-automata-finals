@@ -383,18 +383,20 @@ export function calculateSelfLoopPath(
   x: number,
   y: number,
   radius: number = 30,
-  loopSize: number = 40,
+  loopSize: number = 45,
 ): string {
-  const startAngle = -50 * (Math.PI / 180)
-  const endAngle = 50 * (Math.PI / 180)
+  // Start and end points on the upper part of the circle
+  const startAngle = -60 * (Math.PI / 180)
+  const endAngle = 60 * (Math.PI / 180)
   
   const startX = x + Math.cos(startAngle) * radius
   const startY = y + Math.sin(startAngle) * radius
   const endX = x + Math.cos(endAngle) * radius
   const endY = y + Math.sin(endAngle) * radius
   
-  const controlX = x + loopSize
-  const controlY = y - loopSize - 10
+  // Control point extends outward (upward) from the state
+  const controlX = x
+  const controlY = y - loopSize - 15
   
   return `M ${startX},${startY} Q ${controlX},${controlY} ${endX},${endY}`
 }
