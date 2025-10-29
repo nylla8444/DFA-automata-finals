@@ -1,0 +1,220 @@
+[
+    {
+        "id": "example-binary-01",
+        "name": "Binary Ending in \"01\"",
+        "description": "Accepts binary strings that end with \"01\"",
+        "dfa": {
+            "id": "example-binary-01",
+            "name": "Binary Strings Ending in 01",
+            "description": "Accepts any binary string that ends with \"01\"",
+            "alphabet": [
+                "0",
+                "1"
+            ],
+            "states": [
+                {
+                    "id": "q0",
+                    "label": "q0",
+                    "isInitial": true,
+                    "isAccepting": false,
+                    "x": 97.5,
+                    "y": 99
+                },
+                {
+                    "id": "q1",
+                    "label": "q1",
+                    "isInitial": false,
+                    "isAccepting": false,
+                    "x": 379.5,
+                    "y": 267
+                },
+                {
+                    "id": "q2",
+                    "label": "q2",
+                    "isInitial": false,
+                    "isAccepting": true,
+                    "x": 102.5,
+                    "y": 266
+                }
+            ],
+            "transitions": [
+                {
+                    "id": "t1",
+                    "fromStateId": "q0",
+                    "toStateId": "q1",
+                    "symbol": "0"
+                },
+                {
+                    "id": "t2",
+                    "fromStateId": "q0",
+                    "toStateId": "q0",
+                    "symbol": "1"
+                },
+                {
+                    "id": "t3",
+                    "fromStateId": "q1",
+                    "toStateId": "q1",
+                    "symbol": "0"
+                },
+                {
+                    "id": "t4",
+                    "fromStateId": "q1",
+                    "toStateId": "q2",
+                    "symbol": "1"
+                },
+                {
+                    "id": "t5",
+                    "fromStateId": "q2",
+                    "toStateId": "q1",
+                    "symbol": "0"
+                },
+                {
+                    "id": "t6",
+                    "fromStateId": "q2",
+                    "toStateId": "q0",
+                    "symbol": "1"
+                }
+            ],
+            "initialStateId": "q0",
+            "acceptingStateIds": [
+                "q2"
+            ],
+            "createdAt": "2025-10-29T09:44:51.190Z",
+            "updatedAt": "2025-10-29T09:44:51.190Z"
+        },
+        "createdAt": "2025-10-29T09:44:53.019Z",
+        "updatedAt": "2025-10-29T11:21:19.974Z"
+    },
+    {
+        "id": "example-even-zeros",
+        "name": "Even Number of 0s",
+        "description": "Accepts binary strings with an even number of 0s",
+        "dfa": {
+            "id": "example-even-zeros",
+            "name": "Even Number of 0s",
+            "description": "Accepts binary strings containing an even number of 0s (including zero 0s)",
+            "alphabet": [
+                "0",
+                "1"
+            ],
+            "states": [
+                {
+                    "id": "even",
+                    "label": "Even",
+                    "isInitial": true,
+                    "isAccepting": true,
+                    "x": 224.5,
+                    "y": 290
+                },
+                {
+                    "id": "odd",
+                    "label": "Odd",
+                    "isInitial": false,
+                    "isAccepting": false,
+                    "x": 523.5,
+                    "y": 288
+                }
+            ],
+            "transitions": [
+                {
+                    "id": "t1",
+                    "fromStateId": "even",
+                    "toStateId": "odd",
+                    "symbol": "0"
+                },
+                {
+                    "id": "t2",
+                    "fromStateId": "even",
+                    "toStateId": "even",
+                    "symbol": "1"
+                },
+                {
+                    "id": "t3",
+                    "fromStateId": "odd",
+                    "toStateId": "even",
+                    "symbol": "0"
+                },
+                {
+                    "id": "t4",
+                    "fromStateId": "odd",
+                    "toStateId": "odd",
+                    "symbol": "1"
+                }
+            ],
+            "initialStateId": "even",
+            "acceptingStateIds": [
+                "even"
+            ],
+            "createdAt": "2025-10-29T09:44:51.190Z",
+            "updatedAt": "2025-10-29T09:44:51.190Z"
+        },
+        "createdAt": "2025-10-29T09:44:53.019Z",
+        "updatedAt": "2025-10-29T11:13:46.861Z"
+    },
+    {
+        "id": "example-ends-with-1",
+        "name": "Ends with 1",
+        "description": "Test - Accepts string that ends with 1",
+        "dfa": {
+            "id": "example-ends-with-1",
+            "name": "Ends with 1",
+            "description": "Accepts string that ends with 1",
+            "alphabet": [
+                "0",
+                "1"
+            ],
+            "states": [
+                {
+                    "id": "q0",
+                    "label": "q0",
+                    "isInitial": true,
+                    "isAccepting": false,
+                    "x": 217.5,
+                    "y": 338
+                },
+                {
+                    "id": "q1",
+                    "label": "q1",
+                    "isInitial": false,
+                    "isAccepting": true,
+                    "x": 475.5,
+                    "y": 337
+                }
+            ],
+            "transitions": [
+                {
+                    "id": "t0",
+                    "fromStateId": "q0",
+                    "toStateId": "q1",
+                    "symbol": "1"
+                },
+                {
+                    "id": "t1",
+                    "fromStateId": "q1",
+                    "toStateId": "q0",
+                    "symbol": "0"
+                },
+                {
+                    "id": "t2",
+                    "fromStateId": "q1",
+                    "toStateId": "q1",
+                    "symbol": "1"
+                },
+                {
+                    "id": "t3",
+                    "fromStateId": "q0",
+                    "toStateId": "q0",
+                    "symbol": "0"
+                }
+            ],
+            "initialStateId": "q0",
+            "acceptingStateIds": [
+                "q1"
+            ],
+            "createdAt": "2025-10-29T09:55:34.057Z",
+            "updatedAt": "2025-10-29T09:55:34.057Z"
+        },
+        "createdAt": "2025-10-29T09:57:23.888Z",
+        "updatedAt": "2025-10-29T11:13:07.694Z"
+    }
+]

@@ -3,6 +3,7 @@ import { DFAEngine, binaryEndingIn01 } from '../lib/dfa'
 import { DFASimulator, Navigation } from '../components'
 import { useState, useEffect } from 'react'
 import { getAllDFAs } from '../utils/dfa-storage'
+import { loadExampleDFAs } from '../utils/example-loader'
 import type { SavedDFA } from '../utils/dfa-storage'
 
 export const Route = createFileRoute('/')({
@@ -17,6 +18,10 @@ function App() {
   
   // Load all saved DFAs from collection
   useEffect(() => {
+    // Load example DFAs if localStorage is empty
+    loadExampleDFAs()
+    
+    // Get all DFAs (including newly loaded examples)
     const dfas = getAllDFAs()
     setSavedDFAs(dfas)
     
@@ -190,36 +195,7 @@ function App() {
             </>
           )}
         </div>
-
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-            Development Progress
-          </h2>
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">✅</span>
-              <span className="text-gray-700">Phase 1: Core DFA Engine & Types</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">✅</span>
-              <span className="text-gray-700">Phase 2: Visualization Components</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">✅</span>
-              <span className="text-gray-700">Phase 3: Routes & LocalStorage</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">✅</span>
-              <span className="text-gray-700">Phase 4: Interactive DFA Editor</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">⏳</span>
-              <span className="text-gray-500">Phase 5: Polish & Advanced Features</span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   )
 }
-

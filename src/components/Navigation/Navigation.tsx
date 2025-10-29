@@ -27,11 +27,6 @@ export function Navigation() {
               </Link>
             </div>
           </div>
-          <div className="flex items-center">
-            <span className="text-sm text-gray-500">
-              Phase 4 �
-            </span>
-          </div>
         </div>
       </div>
     </nav>

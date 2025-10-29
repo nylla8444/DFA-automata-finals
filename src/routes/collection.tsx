@@ -1,8 +1,8 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { Navigation } from '../components/Navigation/Navigation'
-import { getAllDFAs, initializeExamples, deleteDFA } from '../utils/dfa-storage'
-import { binaryEndingIn01, evenNumberOfZeros } from '../utils/dfa-examples'
+import { getAllDFAs, deleteDFA } from '../utils/dfa-storage'
+import { loadExampleDFAs } from '../utils/example-loader'
 import type { SavedDFA } from '../utils/dfa-storage'
 
 export const Route = createFileRoute('/collection')({
@@ -14,19 +14,8 @@ function CollectionPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Initialize with examples if empty
-    initializeExamples([
-      {
-        name: 'Binary Ending in "01"',
-        description: 'Accepts binary strings that end with "01"',
-        dfa: binaryEndingIn01,
-      },
-      {
-        name: 'Even Number of 0s',
-        description: 'Accepts binary strings with an even number of 0s',
-        dfa: evenNumberOfZeros,
-      },
-    ])
+    // Load example DFAs if localStorage is empty
+    loadExampleDFAs()
 
     // Load all DFAs
     const loaded = getAllDFAs()
