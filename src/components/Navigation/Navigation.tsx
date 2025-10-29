@@ -19,11 +19,17 @@ export function Navigation() {
               >
                 Simulator
               </Link>
+              <Link
+                to="/collection"
+                className="[&.active]:text-indigo-600 [&.active]:font-semibold text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Collection
+              </Link>
             </div>
           </div>
           <div className="flex items-center">
             <span className="text-sm text-gray-500">
-              Phase 2 Complete ✅
+              Phase 3 🚧
             </span>
           </div>
         </div>

@@ -169,12 +169,12 @@ function App() {
               <span className="text-gray-700">Phase 2: Visualization Components</span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-2xl">⏳</span>
-              <span className="text-gray-500">Phase 3: Routes & Pages</span>
+              <span className="text-2xl">✅</span>
+              <span className="text-gray-700">Phase 3: Routes & LocalStorage</span>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-2xl">⏳</span>
-              <span className="text-gray-500">Phase 4: Features & Editing</span>
+              <span className="text-gray-500">Phase 4: Interactive DFA Editor</span>
             </div>
           </div>
         </div>
