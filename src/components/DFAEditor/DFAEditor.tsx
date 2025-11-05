@@ -329,110 +329,118 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
     })
   }
 
+
+
   return (
     <div className="dfa-editor">
-      {/* Toolbar */}
+      {/* Main Toolbar */}
       <div className="bg-gray-100 border border-gray-300 rounded-lg p-4 mb-4">
-        <div className="flex gap-4 items-center flex-wrap">
-          <div className="flex gap-2">
-            <button
-              onClick={() => setMode('select')}
-              className={`px-4 py-2 rounded font-medium transition-colors ${
-                mode === 'select'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              🖱️ Select
-            </button>
-            <button
-              onClick={() => setMode('addState')}
-              className={`px-4 py-2 rounded font-medium transition-colors ${
-                mode === 'addState'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              ➕ Add State
-            </button>
-            <button
-              onClick={() => setMode('addTransition')}
-              className={`px-4 py-2 rounded font-medium transition-colors ${
-                mode === 'addTransition'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              ➡️ Add Transition
-            </button>
+        <div className="flex gap-4 items-center justify-between flex-wrap">
+          {/* Left side - Editing tools */}
+          <div className="flex gap-4 items-center flex-wrap">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setMode('select')}
+                className={`px-4 py-2 rounded font-medium transition-colors ${
+                  mode === 'select'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                🖱️ Select
+              </button>
+              <button
+                onClick={() => setMode('addState')}
+                className={`px-4 py-2 rounded font-medium transition-colors ${
+                  mode === 'addState'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                ➕ Add State
+              </button>
+              <button
+                onClick={() => setMode('addTransition')}
+                className={`px-4 py-2 rounded font-medium transition-colors ${
+                  mode === 'addTransition'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                ➡️ Add Transition
+              </button>
+            </div>
+
+            <div className="border-l border-gray-300 pl-4 flex gap-2">
+              <button
+                onClick={() => {
+                  const prev = history.undo()
+                  if (prev) {
+                    isApplyingHistory.current = true
+                    setDFA(prev)
+                    isApplyingHistory.current = false
+                  }
+                }}
+                disabled={!history.canUndo}
+                className={`px-3 py-2 rounded font-medium transition-colors ${
+                  history.canUndo
+                    ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                    : 'bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+                title={`Undo (Ctrl+Z) - ${history.getHistoryPreview().index}/${history.getHistoryPreview().total - 1} changes`}
+              >
+                ↶ Undo
+              </button>
+              <button
+                onClick={() => {
+                  const next = history.redo()
+                  if (next) {
+                    isApplyingHistory.current = true
+                    setDFA(next)
+                    isApplyingHistory.current = false
+                  }
+                }}
+                disabled={!history.canRedo}
+                className={`px-3 py-2 rounded font-medium transition-colors ${
+                  history.canRedo
+                    ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                    : 'bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+                title="Redo (Ctrl+Shift+Z)"
+              >
+                ↷ Redo
+              </button>
+            </div>
           </div>
 
-          <div className="border-l border-gray-300 pl-4 flex gap-2">
-            <button
-              onClick={() => {
-                const prev = history.undo()
-                if (prev) {
-                  isApplyingHistory.current = true
-                  setDFA(prev)
-                  isApplyingHistory.current = false
-                }
-              }}
-              disabled={!history.canUndo}
-              className={`px-3 py-2 rounded font-medium transition-colors ${
-                history.canUndo
-                  ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                  : 'bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed'
-              }`}
-              title={`Undo (Ctrl+Z) - ${history.getHistoryPreview().index}/${history.getHistoryPreview().total - 1} changes`}
-            >
-              ↶ Undo
-            </button>
-            <button
-              onClick={() => {
-                const next = history.redo()
-                if (next) {
-                  isApplyingHistory.current = true
-                  setDFA(next)
-                  isApplyingHistory.current = false
-                }
-              }}
-              disabled={!history.canRedo}
-              className={`px-3 py-2 rounded font-medium transition-colors ${
-                history.canRedo
-                  ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                  : 'bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed'
-              }`}
-              title="Redo (Ctrl+Shift+Z)"
-            >
-              ↷ Redo
-            </button>
-          </div>
-
-          <div className="border-l border-gray-300 pl-4 flex gap-2 text-sm">
-            <span className="text-gray-600">States: {dfa.states.length}</span>
-            <span className="text-gray-600">|</span>
-            <span className="text-gray-600">Transitions: {dfa.transitions.length}</span>
-            <span className="text-gray-600">|</span>
-            <span className="text-gray-600">Alphabet: {dfa.alphabet.join(', ') || 'empty'}</span>
+          {/* Right side - Stats */}
+          <div className="flex gap-2 text-sm text-gray-600">
+            <span>States: {dfa.states.length}</span>
+            <span>|</span>
+            <span>Transitions: {dfa.transitions.length}</span>
+            <span>|</span>
+            <span>Alphabet: {dfa.alphabet.join(', ') || 'empty'}</span>
           </div>
         </div>
 
         {mode === 'addState' && (
-          <p className="text-sm text-gray-600 mt-2">
+          <p className="text-sm text-gray-600 mt-3">
             💡 Click anywhere on the canvas to add a new state • Press <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs">ESC</kbd> to cancel
           </p>
         )}
         {mode === 'addTransition' && (
-          <p className="text-sm text-gray-600 mt-2">
+          <p className="text-sm text-gray-600 mt-3">
             💡 Click a state to start, then click another state to create a transition • Press <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs">ESC</kbd> to cancel
           </p>
         )}
         {mode === 'select' && selectedStateId && (
-          <p className="text-sm text-gray-600 mt-2">
+          <p className="text-sm text-gray-600 mt-3">
             💡 Drag to move • Press <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs">ESC</kbd> to deselect • Press <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs">Del</kbd> to delete
           </p>
         )}
       </div>
+
+  
 
       {/* Canvas */}
       <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white">

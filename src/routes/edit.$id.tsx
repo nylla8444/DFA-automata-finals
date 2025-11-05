@@ -5,6 +5,8 @@ import { DFAEditor } from '../components/DFAEditor/DFAEditor'
 import { getDFAById, updateDFA } from '../utils/dfa-storage'
 import type { SavedDFA } from '../utils/dfa-storage'
 import type { DFA } from '../types/dfa'
+import { exportDFAToJSON, importDFAFromJSON, copyDFAToClipboard } from '../utils/export-helper'
+
 
 export const Route = createFileRoute('/edit/$id')({
   component: EditPage,
@@ -57,6 +59,56 @@ function EditPage() {
       setSaving(false)
     }
   }
+
+  // Export DFA to JSON file
+  const handleExportJSON = () => {
+    if (!currentDFA) return
+    try {
+      // Update name before exporting
+      const dfaToExport = { ...currentDFA, name: name || currentDFA.name }
+      exportDFAToJSON(dfaToExport)
+      alert('DFA exported successfully!')
+    } catch (error) {
+      alert('Failed to export DFA: ' + (error as Error).message)
+    }
+  }
+
+  // Import DFA from JSON file
+  const handleImportJSON = () => {
+    if (!currentDFA) return
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.json'
+    
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (!file) return
+
+      try {
+        const importedDFA = await importDFAFromJSON(file)
+        // Keep the current ID to maintain editor state
+        importedDFA.id = currentDFA.id
+        setCurrentDFA(importedDFA)
+        alert('DFA imported successfully!')
+      } catch (error) {
+        alert('Failed to import DFA: ' + (error as Error).message)
+      }
+    }
+    
+    input.click()
+  }
+
+  // Copy DFA JSON to clipboard
+  const handleCopyJSON = async () => {
+    if (!currentDFA) return
+    try {
+      await copyDFAToClipboard(currentDFA)
+      alert('DFA JSON copied to clipboard!')
+    } catch (error) {
+      alert('Failed to copy to clipboard: ' + (error as Error).message)
+    }
+  }
+
 
   if (loading || !savedDFA || !currentDFA) {
     return (
@@ -120,6 +172,42 @@ function EditPage() {
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">
             Visual Editor
           </h2>
+    {/* Import/Export Section */}
+      <div className="bg-white border border-gray-300 rounded-lg p-3 mb-4 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-gray-700">Import/Export:</span>
+            <button
+              onClick={handleExportJSON}
+              className="px-3 py-1.5 text-sm rounded font-medium bg-green-50 border border-green-300 text-green-700 hover:bg-green-100 transition-colors flex items-center gap-1.5"
+              title="Download DFA as JSON file"
+            >
+              <span>📥</span>
+              <span>Export JSON</span>
+            </button>
+            <button
+              onClick={handleImportJSON}
+              className="px-3 py-1.5 text-sm rounded font-medium bg-blue-50 border border-blue-300 text-blue-700 hover:bg-blue-100 transition-colors flex items-center gap-1.5"
+              title="Load DFA from JSON file"
+            >
+              <span>📤</span>
+              <span>Import JSON</span>
+            </button>
+            <button
+              onClick={handleCopyJSON}
+              className="px-3 py-1.5 text-sm rounded font-medium bg-purple-50 border border-purple-300 text-purple-700 hover:bg-purple-100 transition-colors flex items-center gap-1.5"
+              title="Copy JSON to clipboard"
+            >
+              <span>📋</span>
+              <span>Copy JSON</span>
+            </button>
+          </div>
+          <div className="text-xs text-gray-500">
+            Save or load your DFA design
+          </div>
+        </div>
+      </div>
+
           <p className="text-gray-600 mb-4">
             Edit your DFA visually. Drag states to reposition, add/remove states and transitions.
           </p>
