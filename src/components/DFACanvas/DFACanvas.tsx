@@ -30,7 +30,13 @@ export function DFACanvas({
   onStateClick
 }: DFACanvasProps) {
   const [positions, setPositions] = useState<Map<string, { x: number; y: number }>>(new Map())
-  const stateRadius = 30
+  const defaultStateRadius = 30
+  
+  // Helper function to get radius for a state
+  const getStateRadius = (stateId: string): number => {
+    const state = dfa.states.find(s => s.id === stateId)
+    return state?.radius ?? defaultStateRadius
+  }
 
   // Use saved positions from state data, or calculate circular layout as fallback
   useEffect(() => {
@@ -117,12 +123,12 @@ export function DFACanvas({
         </defs>
 
         {/* Initial state arrow */}
-        {initialPos && (
+        {initialPos && dfa.initialStateId && (
           <g>
             <line
               x1={20}
               y1={initialPos.y}
-              x2={initialPos.x - stateRadius - 10}
+              x2={initialPos.x - getStateRadius(dfa.initialStateId) - 10}
               y2={initialPos.y}
               stroke="#666"
               strokeWidth="2"
@@ -178,11 +184,12 @@ export function DFACanvas({
 
             if (isSelfLoop) {
               // Self-loop - same as editor
-              const loopRadius = stateRadius * 1.5
-              const selfLoopPath = `M ${fromPos.x - stateRadius * 0.5} ${fromPos.y - stateRadius * 0.7} 
+              const fromRadius = getStateRadius(transition.fromStateId)
+              const loopRadius = fromRadius * 1.5
+              const selfLoopPath = `M ${fromPos.x - fromRadius * 0.5} ${fromPos.y - fromRadius * 0.7} 
                            C ${fromPos.x - loopRadius * 1.2} ${fromPos.y - loopRadius * 1.5}
                              ${fromPos.x + loopRadius * 1.2} ${fromPos.y - loopRadius * 1.5}
-                             ${fromPos.x + stateRadius * 0.5} ${fromPos.y - stateRadius * 0.7}`
+                             ${fromPos.x + fromRadius * 0.5} ${fromPos.y - fromRadius * 0.7}`
               
               return (
                 <g key={groupKey}>
@@ -238,10 +245,12 @@ export function DFACanvas({
               const perpDy = unitDx
               const curveOffset = 25  // How much to curve
 
-              const startX = fromPos.x + unitDx * stateRadius
-              const startY = fromPos.y + unitDy * stateRadius
-              const endX = toPos.x - unitDx * stateRadius
-              const endY = toPos.y - unitDy * stateRadius
+              const fromRadius = getStateRadius(transition.fromStateId)
+              const toRadius = getStateRadius(transition.toStateId)
+              const startX = fromPos.x + unitDx * fromRadius
+              const startY = fromPos.y + unitDy * fromRadius
+              const endX = toPos.x - unitDx * toRadius
+              const endY = toPos.y - unitDy * toRadius
 
               // Control point for quadratic curve, offset to the side
               const midX = (fromPos.x + toPos.x) / 2 + perpDx * curveOffset
@@ -292,10 +301,12 @@ export function DFACanvas({
             }
 
             // Single direction - use straight line
-            const startX = fromPos.x + unitDx * stateRadius
-            const startY = fromPos.y + unitDy * stateRadius
-            const endX = toPos.x - unitDx * stateRadius
-            const endY = toPos.y - unitDy * stateRadius
+            const fromRadius = getStateRadius(transition.fromStateId)
+            const toRadius = getStateRadius(transition.toStateId)
+            const startX = fromPos.x + unitDx * fromRadius
+            const startY = fromPos.y + unitDy * fromRadius
+            const endX = toPos.x - unitDx * toRadius
+            const endY = toPos.y - unitDy * toRadius
 
             const midX = (startX + endX) / 2
             const midY = (startY + endY) / 2
@@ -349,6 +360,7 @@ export function DFACanvas({
             const isActive = currentStateId === state.id
             const isVisited = visitedStateIds.includes(state.id)
             const isAccepting = dfa.acceptingStateIds.includes(state.id)
+            const radius = getStateRadius(state.id)
 
             return (
               <g
@@ -362,7 +374,7 @@ export function DFACanvas({
                   <circle
                     cx={pos.x}
                     cy={pos.y}
-                    r={stateRadius + 5}
+                    r={radius + 5}
                     fill="none"
                     stroke={isActive ? '#3b82f6' : isVisited ? '#818cf8' : '#374151'}
                     strokeWidth={2}
@@ -374,7 +386,7 @@ export function DFACanvas({
                 <circle
                   cx={pos.x}
                   cy={pos.y}
-                  r={stateRadius}
+                  r={radius}
                   fill={isActive ? '#3b82f6' : isVisited ? '#dbeafe' : '#ffffff'}
                   stroke={isActive ? '#2563eb' : isVisited ? '#93c5fd' : '#374151'}
                   strokeWidth={isActive ? 2.5 : 2}

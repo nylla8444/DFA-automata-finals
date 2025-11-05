@@ -14,6 +14,7 @@ export interface DFAState {
   isAccepting: boolean
   x: number // X position for visualization
   y: number // Y position for visualization
+  radius?: number // Circle radius for visualization (default: 30)
 }
 
 /**

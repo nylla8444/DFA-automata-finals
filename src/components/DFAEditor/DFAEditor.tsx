@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import type { DFA, DFAState, DFATransition } from '../../types/dfa'
 import { generateStateId } from '../../utils/dfa-engine'
+import { useHistory } from '../../hooks/useHistory'
 
 interface DFAEditorProps {
   initialDFA: DFA
@@ -27,30 +28,115 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
   const [mode, setMode] = useState<'select' | 'addState' | 'addTransition'>('select')
   
   const svgRef = useRef<SVGSVGElement>(null)
-  const stateRadius = 30
-
-  // Initialize positions from state data or calculate if not set
-  useEffect(() => {
-    if (positions.size === 0 && dfa.states.length > 0) {
-      const newPositions = new Map<string, { x: number; y: number }>()
-      dfa.states.forEach((state, index) => {
-        // Use saved positions if available, otherwise arrange in a circle
-        if (state.x !== undefined && state.y !== undefined && state.x !== 0 && state.y !== 0) {
-          newPositions.set(state.id, { x: state.x, y: state.y })
-        } else {
-          const angle = (index / dfa.states.length) * 2 * Math.PI - Math.PI / 2
-          const radius = Math.min(width, height) * 0.3
-          const centerX = width / 2
-          const centerY = height / 2
-          newPositions.set(state.id, {
-            x: centerX + radius * Math.cos(angle),
-            y: centerY + radius * Math.sin(angle),
-          })
-        }
-      })
-      setPositions(newPositions)
+  const dragStartPos = useRef<{ x: number; y: number } | null>(null)
+  const hasDragged = useRef(false)
+  const defaultStateRadius = 30
+  
+  // History management for undo/redo
+  const history = useHistory(initialDFA)
+  const isApplyingHistory = useRef(false)
+  
+  // Wrapper for setDFA that tracks history
+  const updateDFA = (newDFA: DFA) => {
+    if (!isApplyingHistory.current) {
+      history.pushState(newDFA)
     }
-  }, [dfa.states, positions.size, width, height])
+    setDFA(newDFA)
+  }
+  
+  // Helper function to get radius for a state
+  const getStateRadius = (stateId: string): number => {
+    const state = dfa.states.find(s => s.id === stateId)
+    return state?.radius ?? defaultStateRadius
+  }
+  
+  // Handle undo/redo events from keyboard shortcuts
+  useEffect(() => {
+    const handleUndo = (e: Event) => {
+      const customEvent = e as CustomEvent<DFA>
+      isApplyingHistory.current = true
+      setDFA(customEvent.detail)
+      isApplyingHistory.current = false
+    }
+
+    const handleRedo = (e: Event) => {
+      const customEvent = e as CustomEvent<DFA>
+      isApplyingHistory.current = true
+      setDFA(customEvent.detail)
+      isApplyingHistory.current = false
+    }
+
+    window.addEventListener('dfa-undo', handleUndo)
+    window.addEventListener('dfa-redo', handleRedo)
+
+    return () => {
+      window.removeEventListener('dfa-undo', handleUndo)
+      window.removeEventListener('dfa-redo', handleRedo)
+    }
+  }, [])
+
+  // Handle ESC key to deselect state and Delete key to delete state
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // ESC key - deselect and cancel
+      if (e.key === 'Escape') {
+        setSelectedStateId(null)
+        setCreatingTransition(null)
+        // Reset mode to select
+        if (mode !== 'select') {
+          setMode('select')
+        }
+      }
+      
+      // Delete key - delete selected state (handled inline to avoid dependency issues)
+      if (e.key === 'Delete' && selectedStateId && mode === 'select') {
+        if (confirm('Delete this state?')) {
+          updateDFA({
+            ...dfa,
+            states: dfa.states.filter(s => s.id !== selectedStateId),
+            transitions: dfa.transitions.filter(t => t.fromStateId !== selectedStateId && t.toStateId !== selectedStateId),
+            initialStateId: dfa.initialStateId === selectedStateId ? dfa.states.find(s => s.id !== selectedStateId)?.id || '' : dfa.initialStateId,
+            acceptingStateIds: dfa.acceptingStateIds.filter(id => id !== selectedStateId),
+          })
+          const newPositions = new Map(positions)
+          newPositions.delete(selectedStateId)
+          setPositions(newPositions)
+          setSelectedStateId(null)
+        }
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [mode, selectedStateId, dfa, positions, updateDFA])
+
+  // Sync positions with DFA state (for undo/redo and initial load)
+  useEffect(() => {
+    const newPositions = new Map<string, { x: number; y: number }>()
+    
+    dfa.states.forEach((state, index) => {
+      // Use saved positions from state data if available
+      if (state.x !== undefined && state.y !== undefined) {
+        newPositions.set(state.id, { x: state.x, y: state.y })
+      } else if (positions.has(state.id)) {
+        // Keep existing position from map if state doesn't have position data
+        const existing = positions.get(state.id)!
+        newPositions.set(state.id, existing)
+      } else {
+        // Calculate new position in circle for completely new states
+        const angle = (index / Math.max(1, dfa.states.length)) * 2 * Math.PI - Math.PI / 2
+        const radius = Math.min(width, height) * 0.3
+        const centerX = width / 2
+        const centerY = height / 2
+        newPositions.set(state.id, {
+          x: centerX + radius * Math.cos(angle),
+          y: centerY + radius * Math.sin(angle),
+        })
+      }
+    })
+    
+    setPositions(newPositions)
+  }, [dfa.states])
 
   // Update parent when DFA changes
   useEffect(() => {
@@ -65,9 +151,9 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
     const y = e.clientY - rect.top
 
     // Check if clicked on a state
-    const clickedStateId = Array.from(positions.entries()).find(([_, pos]) => {
+    const clickedStateId = Array.from(positions.entries()).find(([stateId, pos]) => {
       const distance = Math.sqrt((pos.x - x) ** 2 + (pos.y - y) ** 2)
-      return distance <= stateRadius
+      return distance <= getStateRadius(stateId)
     })?.[0]
 
     if (mode === 'addState' && !clickedStateId) {
@@ -82,13 +168,12 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
         y: y,
       }
 
-      setDFA({
+      updateDFA({
         ...dfa,
         states: [...dfa.states, newState],
       })
-
-      setPositions(new Map(positions).set(newStateId, { x, y }))
-      setMode('select')
+      // Don't auto-switch to select mode - stay in addState mode for multiple additions
+      // User can press ESC or click Select button to exit
     } else if (mode === 'addTransition' && clickedStateId) {
       if (!creatingTransition) {
         // Start creating transition
@@ -110,7 +195,7 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
             ? dfa.alphabet
             : [...dfa.alphabet, symbol].sort()
 
-          setDFA({
+          updateDFA({
             ...dfa,
             alphabet: newAlphabet,
             transitions: [...dfa.transitions, newTransition],
@@ -120,7 +205,12 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
         setMode('select')
       }
     } else if (mode === 'select') {
-      setSelectedStateId(clickedStateId || null)
+      // Only select if clicked on a state, deselect if clicked on empty space
+      if (clickedStateId) {
+        setSelectedStateId(clickedStateId)
+      } else {
+        setSelectedStateId(null)
+      }
     }
   }
 
@@ -129,22 +219,44 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
     if (mode === 'select') {
       setDraggingStateId(stateId)
       setSelectedStateId(stateId)
+      // Record starting position
+      const rect = svgRef.current?.getBoundingClientRect()
+      if (rect) {
+        dragStartPos.current = {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        }
+        hasDragged.current = false
+      }
     }
   }
 
   const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (!svgRef.current || !draggingStateId) return
+    if (!svgRef.current || !draggingStateId || !dragStartPos.current) return
 
     const rect = svgRef.current.getBoundingClientRect()
-    const x = Math.max(stateRadius, Math.min(width - stateRadius, e.clientX - rect.left))
-    const y = Math.max(stateRadius, Math.min(height - stateRadius, e.clientY - rect.top))
+    const currentX = e.clientX - rect.left
+    const currentY = e.clientY - rect.top
 
-    setPositions(new Map(positions).set(draggingStateId, { x, y }))
+    // Check if mouse moved more than 5 pixels (drag threshold)
+    const distance = Math.sqrt(
+      Math.pow(currentX - dragStartPos.current.x, 2) +
+      Math.pow(currentY - dragStartPos.current.y, 2)
+    )
+
+    if (distance > 5) {
+      hasDragged.current = true
+      const radius = getStateRadius(draggingStateId)
+      const x = Math.max(radius, Math.min(width - radius, currentX))
+      const y = Math.max(radius, Math.min(height - radius, currentY))
+
+      setPositions(new Map(positions).set(draggingStateId, { x, y }))
+    }
   }
 
   const handleMouseUp = () => {
-    if (draggingStateId) {
-      // Update the DFA state positions when dragging ends
+    if (draggingStateId && hasDragged.current) {
+      // Update the DFA state positions only if actually dragged
       const pos = positions.get(draggingStateId)
       if (pos) {
         const updatedStates = dfa.states.map(state =>
@@ -152,16 +264,18 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
             ? { ...state, x: pos.x, y: pos.y }
             : state
         )
-        setDFA({ ...dfa, states: updatedStates })
+        updateDFA({ ...dfa, states: updatedStates })
       }
     }
     setDraggingStateId(null)
+    dragStartPos.current = null
+    hasDragged.current = false
   }
 
   const deleteState = (stateId: string) => {
     if (!confirm('Delete this state?')) return
 
-    setDFA({
+    updateDFA({
       ...dfa,
       states: dfa.states.filter(s => s.id !== stateId),
       transitions: dfa.transitions.filter(t => t.fromStateId !== stateId && t.toStateId !== stateId),
@@ -178,14 +292,14 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
   const deleteTransition = (transitionId: string) => {
     if (!confirm('Delete this transition?')) return
 
-    setDFA({
+    updateDFA({
       ...dfa,
       transitions: dfa.transitions.filter(t => t.id !== transitionId),
     })
   }
 
   const toggleInitialState = (stateId: string) => {
-    setDFA({
+    updateDFA({
       ...dfa,
       initialStateId: stateId,
     })
@@ -193,7 +307,7 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
 
   const toggleAcceptingState = (stateId: string) => {
     const isAccepting = dfa.acceptingStateIds.includes(stateId)
-    setDFA({
+    updateDFA({
       ...dfa,
       acceptingStateIds: isAccepting
         ? dfa.acceptingStateIds.filter(id => id !== stateId)
@@ -202,9 +316,16 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
   }
 
   const updateStateLabel = (stateId: string, newLabel: string) => {
-    setDFA({
+    updateDFA({
       ...dfa,
       states: dfa.states.map(s => s.id === stateId ? { ...s, label: newLabel } : s),
+    })
+  }
+
+  const updateStateRadius = (stateId: string, newRadius: number) => {
+    updateDFA({
+      ...dfa,
+      states: dfa.states.map(s => s.id === stateId ? { ...s, radius: newRadius } : s),
     })
   }
 
@@ -246,6 +367,47 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
             </button>
           </div>
 
+          <div className="border-l border-gray-300 pl-4 flex gap-2">
+            <button
+              onClick={() => {
+                const prev = history.undo()
+                if (prev) {
+                  isApplyingHistory.current = true
+                  setDFA(prev)
+                  isApplyingHistory.current = false
+                }
+              }}
+              disabled={!history.canUndo}
+              className={`px-3 py-2 rounded font-medium transition-colors ${
+                history.canUndo
+                  ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                  : 'bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+              title={`Undo (Ctrl+Z) - ${history.getHistoryPreview().index}/${history.getHistoryPreview().total - 1} changes`}
+            >
+              ↶ Undo
+            </button>
+            <button
+              onClick={() => {
+                const next = history.redo()
+                if (next) {
+                  isApplyingHistory.current = true
+                  setDFA(next)
+                  isApplyingHistory.current = false
+                }
+              }}
+              disabled={!history.canRedo}
+              className={`px-3 py-2 rounded font-medium transition-colors ${
+                history.canRedo
+                  ? 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                  : 'bg-gray-100 border border-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+              title="Redo (Ctrl+Shift+Z)"
+            >
+              ↷ Redo
+            </button>
+          </div>
+
           <div className="border-l border-gray-300 pl-4 flex gap-2 text-sm">
             <span className="text-gray-600">States: {dfa.states.length}</span>
             <span className="text-gray-600">|</span>
@@ -257,12 +419,17 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
 
         {mode === 'addState' && (
           <p className="text-sm text-gray-600 mt-2">
-            💡 Click anywhere on the canvas to add a new state
+            💡 Click anywhere on the canvas to add a new state • Press <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs">ESC</kbd> to cancel
           </p>
         )}
         {mode === 'addTransition' && (
           <p className="text-sm text-gray-600 mt-2">
-            💡 Click a state to start, then click another state to create a transition
+            💡 Click a state to start, then click another state to create a transition • Press <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs">ESC</kbd> to cancel
+          </p>
+        )}
+        {mode === 'select' && selectedStateId && (
+          <p className="text-sm text-gray-600 mt-2">
+            💡 Drag to move • Press <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs">ESC</kbd> to deselect • Press <kbd className="px-1.5 py-0.5 bg-gray-200 rounded text-xs">Del</kbd> to delete
           </p>
         )}
       </div>
@@ -305,11 +472,12 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
 
             if (isSelfLoop) {
               // Self-loop - curves outward from the top of the state
-              const loopRadius = stateRadius * 1.5
-              const path = `M ${fromPos.x - stateRadius * 0.5} ${fromPos.y - stateRadius * 0.7} 
+              const fromRadius = getStateRadius(transition.fromStateId)
+              const loopRadius = fromRadius * 1.5
+              const path = `M ${fromPos.x - fromRadius * 0.5} ${fromPos.y - fromRadius * 0.7} 
                            C ${fromPos.x - loopRadius * 1.2} ${fromPos.y - loopRadius * 1.5}
                              ${fromPos.x + loopRadius * 1.2} ${fromPos.y - loopRadius * 1.5}
-                             ${fromPos.x + stateRadius * 0.5} ${fromPos.y - stateRadius * 0.7}`
+                             ${fromPos.x + fromRadius * 0.5} ${fromPos.y - fromRadius * 0.7}`
 
               return (
                 <g key={transition.id}>
@@ -364,10 +532,12 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
               const perpDy = unitDx
               const curveOffset = 25  // How much to curve
 
-              const startX = fromPos.x + unitDx * stateRadius
-              const startY = fromPos.y + unitDy * stateRadius
-              const endX = toPos.x - unitDx * stateRadius
-              const endY = toPos.y - unitDy * stateRadius
+              const fromRadius = getStateRadius(transition.fromStateId)
+              const toRadius = getStateRadius(transition.toStateId)
+              const startX = fromPos.x + unitDx * fromRadius
+              const startY = fromPos.y + unitDy * fromRadius
+              const endX = toPos.x - unitDx * toRadius
+              const endY = toPos.y - unitDy * toRadius
 
               // Control point for quadratic curve, offset to the side
               const midX = (fromPos.x + toPos.x) / 2 + perpDx * curveOffset
@@ -426,10 +596,12 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
             }
 
             // Single direction - use straight line
-            const startX = fromPos.x + unitDx * stateRadius
-            const startY = fromPos.y + unitDy * stateRadius
-            const endX = toPos.x - unitDx * stateRadius
-            const endY = toPos.y - unitDy * stateRadius
+            const fromRadius = getStateRadius(transition.fromStateId)
+            const toRadius = getStateRadius(transition.toStateId)
+            const startX = fromPos.x + unitDx * fromRadius
+            const startY = fromPos.y + unitDy * fromRadius
+            const endX = toPos.x - unitDx * toRadius
+            const endY = toPos.y - unitDy * toRadius
 
             const midX = (startX + endX) / 2
             const midY = (startY + endY) / 2
@@ -502,6 +674,7 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
             const isSelected = selectedStateId === state.id
             const isInitial = dfa.initialStateId === state.id
             const isAccepting = dfa.acceptingStateIds.includes(state.id)
+            const radius = getStateRadius(state.id)
 
             return (
               <g
@@ -514,7 +687,7 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
                   <circle
                     cx={pos.x}
                     cy={pos.y}
-                    r={stateRadius + 5}
+                    r={radius + 5}
                     fill="none"
                     stroke={isSelected ? '#3b82f6' : '#374151'}
                     strokeWidth="2"
@@ -525,7 +698,7 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
                 <circle
                   cx={pos.x}
                   cy={pos.y}
-                  r={stateRadius}
+                  r={radius}
                   fill={isSelected ? '#dbeafe' : '#ffffff'}
                   stroke={isSelected ? '#3b82f6' : '#374151'}
                   strokeWidth={isSelected ? 3 : 2}
@@ -549,16 +722,16 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
                 {isInitial && (
                   <>
                     <line
-                      x1={pos.x - stateRadius - 40}
+                      x1={pos.x - radius - 40}
                       y1={pos.y}
-                      x2={pos.x - stateRadius - 10}
+                      x2={pos.x - radius - 10}
                       y2={pos.y}
                       stroke="#666"
                       strokeWidth="2"
                       markerEnd="url(#arrowhead-editor)"
                     />
                     <text
-                      x={pos.x - stateRadius - 50}
+                      x={pos.x - radius - 50}
                       y={pos.y - 12}
                       fontSize="12"
                       fill="#666"
@@ -593,6 +766,26 @@ export function DFAEditor({ initialDFA, onChange, width = 1000, height = 600 }: 
                 onChange={(e) => updateStateLabel(selectedStateId, e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded focus:border-indigo-500 focus:outline-none"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Radius: {getStateRadius(selectedStateId)}px
+              </label>
+              <input
+                type="range"
+                min="20"
+                max="60"
+                step="5"
+                value={getStateRadius(selectedStateId)}
+                onChange={(e) => updateStateRadius(selectedStateId, parseInt(e.target.value))}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>20px</span>
+                <span>40px</span>
+                <span>60px</span>
+              </div>
             </div>
 
             <div className="flex gap-3">

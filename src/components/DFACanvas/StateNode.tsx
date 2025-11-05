@@ -12,7 +12,7 @@ interface StateNodeProps {
  * Renders as a circle with label, special styling for initial/accepting states
  */
 export function StateNode({ state, isActive = false, isVisited = false, onStateClick }: StateNodeProps) {
-  const radius = 30
+  const radius = state.radius ?? 30
   const strokeWidth = 2
 
   const handleClick = () => {
