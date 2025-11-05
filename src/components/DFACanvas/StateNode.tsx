@@ -28,13 +28,43 @@ export function StateNode({ state, isActive = false, isVisited = false, onStateC
       onClick={handleClick}
       style={{ cursor: onStateClick ? 'pointer' : 'default' }}
     >
+      {/* Glow effect for active state */}
+      {isActive && (
+        <>
+          <circle
+            r={radius + 8}
+            fill="#4f46e5"
+            opacity="0.2"
+            className="animate-ping"
+            style={{ animationDuration: '1.5s' }}
+          />
+          <circle
+            r={radius + 5}
+            fill="#4f46e5"
+            opacity="0.3"
+          />
+        </>
+      )}
+
+      {/* Subtle glow for visited states */}
+      {isVisited && !isActive && (
+        <circle
+          r={radius + 3}
+          fill="#818cf8"
+          opacity="0.15"
+        />
+      )}
+
       {/* Main circle */}
       <circle
         r={radius}
         fill={isActive ? '#4f46e5' : isVisited ? '#e0e7ff' : '#ffffff'}
-        stroke={isActive ? '#312e81' : '#4b5563'}
-        strokeWidth={strokeWidth}
+        stroke={isActive ? '#312e81' : isVisited ? '#818cf8' : '#4b5563'}
+        strokeWidth={isActive ? strokeWidth + 1 : strokeWidth}
         className="transition-all duration-300"
+        style={{
+          filter: isActive ? 'drop-shadow(0 0 8px rgba(79, 70, 229, 0.5))' : 'none'
+        }}
       />
 
       {/* Double circle for accepting states */}
@@ -42,8 +72,8 @@ export function StateNode({ state, isActive = false, isVisited = false, onStateC
         <circle
           r={radius - 6}
           fill="none"
-          stroke={isActive ? '#312e81' : '#4b5563'}
-          strokeWidth={strokeWidth}
+          stroke={isActive ? '#312e81' : isVisited ? '#818cf8' : '#4b5563'}
+          strokeWidth={isActive ? strokeWidth + 1 : strokeWidth}
           className="transition-all duration-300"
         />
       )}
@@ -52,10 +82,13 @@ export function StateNode({ state, isActive = false, isVisited = false, onStateC
       <text
         textAnchor="middle"
         dy="0.35em"
-        fontSize="14"
-        fontWeight="600"
-        fill={isActive ? '#ffffff' : '#1f2937'}
+        fontSize={isActive ? "16" : "14"}
+        fontWeight={isActive ? "700" : "600"}
+        fill={isActive ? '#ffffff' : isVisited ? '#4338ca' : '#1f2937'}
         className="select-none transition-all duration-300"
+        style={{
+          filter: isActive ? 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3))' : 'none'
+        }}
       >
         {state.label}
       </text>

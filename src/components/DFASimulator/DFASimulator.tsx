@@ -18,6 +18,7 @@ export function DFASimulator({ dfa, inputString }: DFASimulatorProps) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [highlightedTransitionId, setHighlightedTransitionId] = useState<string>()
   const [visitedTransitionIds, setVisitedTransitionIds] = useState<string[]>([])
+  const [animationSpeed, setAnimationSpeed] = useState(800) // milliseconds per step
 
   const engine = new DFAEngine(dfa)
 
@@ -39,6 +40,63 @@ export function DFASimulator({ dfa, inputString }: DFASimulatorProps) {
     setHighlightedTransitionId(undefined)
     setVisitedTransitionIds([])
   }, [inputString, dfa])
+
+  // Keyboard shortcuts for simulator controls
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input field
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return
+      }
+
+      switch (e.key) {
+        case 'ArrowRight':
+          e.preventDefault()
+          if (currentStepIndex < steps.length - 1) {
+            setCurrentStepIndex(prev => prev + 1)
+            setIsPlaying(false)
+          }
+          break
+        case 'ArrowLeft':
+          e.preventDefault()
+          if (currentStepIndex > 0) {
+            setCurrentStepIndex(prev => prev - 1)
+            setIsPlaying(false)
+          }
+          break
+        case ' ':
+        case 'Enter':
+          e.preventDefault()
+          if (currentStepIndex >= steps.length - 1) {
+            setCurrentStepIndex(0)
+          }
+          setIsPlaying(prev => !prev)
+          break
+        case 'r':
+        case 'R':
+          e.preventDefault()
+          setCurrentStepIndex(0)
+          setIsPlaying(false)
+          setVisitedTransitionIds([])
+          break
+        case 'Home':
+          e.preventDefault()
+          setCurrentStepIndex(0)
+          setIsPlaying(false)
+          break
+        case 'End':
+          e.preventDefault()
+          setCurrentStepIndex(steps.length - 1)
+          setIsPlaying(false)
+          break
+      }
+    }
+
+    if (steps.length > 0) {
+      window.addEventListener('keydown', handleKeyDown)
+      return () => window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [steps.length, currentStepIndex])
 
   // Update highlighted transition when step changes
   useEffect(() => {
@@ -76,7 +134,7 @@ export function DFASimulator({ dfa, inputString }: DFASimulatorProps) {
     }
   }, [currentStepIndex, steps, dfa.transitions])
 
-  // Auto-play functionality
+  // Auto-play functionality with adjustable speed
   useEffect(() => {
     if (!isPlaying || currentStepIndex >= steps.length - 1) {
       setIsPlaying(false)
@@ -85,10 +143,10 @@ export function DFASimulator({ dfa, inputString }: DFASimulatorProps) {
 
     const timer = setTimeout(() => {
       setCurrentStepIndex(prev => prev + 1)
-    }, 800)
+    }, animationSpeed)
 
     return () => clearTimeout(timer)
-  }, [isPlaying, currentStepIndex, steps.length])
+  }, [isPlaying, currentStepIndex, steps.length, animationSpeed])
 
   const currentStep = steps[currentStepIndex]
   const isComplete = currentStepIndex === steps.length - 1
@@ -121,8 +179,21 @@ export function DFASimulator({ dfa, inputString }: DFASimulatorProps) {
 
   if (!inputString) {
     return (
-      <div className="text-center py-12 text-gray-500">
-        <p>Enter a string above to start simulation</p>
+      <div className="text-center py-12">
+        <div className="text-gray-500 mb-6">
+          <p className="text-lg font-semibold">Enter a string above to start simulation</p>
+        </div>
+        <div className="max-w-md mx-auto bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <p className="text-sm text-blue-900 font-semibold mb-2">💡 Keyboard Shortcuts:</p>
+          <div className="text-xs text-blue-800 space-y-1 text-left">
+            <div><kbd className="px-2 py-1 bg-white rounded border">→</kbd> Next step</div>
+            <div><kbd className="px-2 py-1 bg-white rounded border">←</kbd> Previous step</div>
+            <div><kbd className="px-2 py-1 bg-white rounded border">Space</kbd> or <kbd className="px-2 py-1 bg-white rounded border">Enter</kbd> Play/Pause</div>
+            <div><kbd className="px-2 py-1 bg-white rounded border">R</kbd> Reset</div>
+            <div><kbd className="px-2 py-1 bg-white rounded border">Home</kbd> Jump to start</div>
+            <div><kbd className="px-2 py-1 bg-white rounded border">End</kbd> Jump to end</div>
+          </div>
+        </div>
       </div>
     )
   }
@@ -136,95 +207,266 @@ export function DFASimulator({ dfa, inputString }: DFASimulatorProps) {
   }
 
   return (
-    <div className="dfa-simulator space-y-6">
-      {/* Visualization */}
-      <DFACanvas
-        dfa={dfa}
-        currentStateId={currentStep?.stateId}
-        visitedStateIds={visitedStateIds}
-        highlightedTransitionId={highlightedTransitionId}
-        visitedTransitionIds={visitedTransitionIds}
-        height={600}
-      />
+    <div className="dfa-simulator">
+      {/* Side-by-Side Layout: Diagram + Controls */}
+      <div className="flex gap-4">
+        {/* Left: Visualization - Takes remaining space */}
+        <div 
+          className={`flex-1 overflow-hidden rounded-lg transition-all duration-500 ${
+            isComplete && result
+              ? result.accepted
+                ? 'border-4 border-green-500 shadow-[0_0_30px_rgba(34,197,94,0.6)]'
+                : 'border-4 border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.6)]'
+              : 'border-2 border-gray-300'
+          }`}
+        >
+          <DFACanvas
+            dfa={dfa}
+            currentStateId={currentStep?.stateId}
+            visitedStateIds={visitedStateIds}
+            highlightedTransitionId={highlightedTransitionId}
+            visitedTransitionIds={visitedTransitionIds}
+            height={600}
+          />
+        </div>
 
-      {/* Step Information */}
-      <div className="bg-white border-2 border-gray-300 rounded-lg p-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div>
-            <p className="text-sm text-gray-600 font-medium">Step</p>
-            <p className="text-2xl font-bold text-indigo-600">
+        {/* Right: Step Information & Controls - Fixed width */}
+        <div className="w-[380px] flex-shrink-0 space-y-4">
+          {/* Step Information Card */}
+          <div className="bg-white border-2 border-gray-300 rounded-lg p-4 ">
+        {/* Progress Bar */}
+        <div className="mb-4">
+          <div className="flex justify-between text-xs text-gray-600 mb-1">
+            <span className="font-semibold">Progress</span>
+            <span className="font-bold">{Math.round((currentStepIndex / (steps.length - 1)) * 100)}%</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${(currentStepIndex / (steps.length - 1)) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className="bg-indigo-50 rounded-lg p-2">
+            <p className="text-xs text-gray-600 font-medium mb-0.5">Step</p>
+            <p className="text-xl font-bold text-indigo-600">
               {currentStepIndex + 1} / {steps.length}
             </p>
           </div>
-          <div>
-            <p className="text-sm text-gray-600 font-medium">Current State</p>
-            <p className="text-2xl font-bold text-gray-800">{currentStep?.stateId}</p>
+          <div className="bg-gray-50 rounded-lg p-2">
+            <p className="text-xs text-gray-600 font-medium mb-0.5">Current State</p>
+            <p className="text-xl font-bold text-gray-800">{currentStep?.stateId}</p>
           </div>
-          <div>
-            <p className="text-sm text-gray-600 font-medium">Symbol Read</p>
-            <p className="text-2xl font-bold text-gray-800 font-mono">
+          <div className="bg-gray-50 rounded-lg p-2">
+            <p className="text-xs text-gray-600 font-medium mb-0.5">Symbol Read</p>
+            <p className="text-xl font-bold text-gray-800 font-mono">
               {currentStep?.symbol || '—'}
             </p>
           </div>
-          <div>
-            <p className="text-sm text-gray-600 font-medium">Remaining</p>
-            <p className="text-xl font-bold text-gray-800 font-mono">
+          <div className="bg-gray-50 rounded-lg p-2">
+            <p className="text-xs text-gray-600 font-medium mb-0.5">Remaining</p>
+            <p className="text-lg font-bold text-gray-800 font-mono overflow-auto">
               {currentStep?.remainingInput || '∅'}
             </p>
+          </div> 
+        </div>
+
+        {/* Input String Progress Visualization */}
+        <div className="mb-4 bg-gray-50 rounded-lg p-3">
+          <p className="text-xs text-gray-600 font-semibold mb-2">Input String:</p>
+          <div className="flex flex-wrap items-center justify-center gap-1 font-mono text-sm">
+            {inputString.split('').map((char, idx) => {
+              const isProcessed = idx < currentStepIndex
+              const isCurrent = idx === currentStepIndex - 1
+              return (
+                <span
+                  key={idx}
+                  className={`px-1.5 py-0.5 rounded transition-all duration-300 ${
+                    isCurrent
+                      ? 'bg-indigo-600 text-white font-bold scale-110 shadow-lg'
+                      : isProcessed
+                      ? 'bg-indigo-200 text-indigo-900'
+                      : 'bg-gray-200 text-gray-600'
+                  }`}
+                >
+                  {char}
+                </span>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Animation Speed Control */}
+        <div className="mb-4 bg-gray-50 rounded-lg p-3">
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-xs text-gray-600 font-semibold">
+              Speed:
+            </label>
+            <span className="text-xs text-gray-700 font-bold">
+              {animationSpeed === 200 ? '🚀 Fast' : 
+               animationSpeed === 500 ? '⚡ Medium' :
+               animationSpeed === 800 ? '🐢 Normal' :
+               animationSpeed === 1200 ? '🐌 Slow' : 'Custom'}
+            </span>
+          </div>
+          <input
+            type="range"
+            min="200"
+            max="2000"
+            step="100"
+            value={animationSpeed}
+            onChange={(e) => setAnimationSpeed(Number(e.target.value))}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+          />
+          <div className="flex justify-between text-xs text-gray-500 mt-0.5">
+            <span>Fast</span>
+            <span>Slow</span>
           </div>
         </div>
 
         {/* Controls */}
-        <div className="flex items-center gap-3 justify-center">
-          <button
-            onClick={handleReset}
-            disabled={currentStepIndex === 0}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            ↺ Reset
-          </button>
-          <button
-            onClick={handlePrevious}
-            disabled={currentStepIndex === 0}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            ← Previous
-          </button>
+        <div className="space-y-2">
           <button
             onClick={isPlaying ? () => setIsPlaying(false) : handlePlay}
             disabled={isComplete && !isPlaying}
-            className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full px-4 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+            title={isPlaying ? 'Pause animation' : 'Play animation'}
           >
             {isPlaying ? '⏸ Pause' : '▶ Play'}
           </button>
-          <button
-            onClick={handleNext}
-            disabled={currentStepIndex >= steps.length - 1}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            Next →
-          </button>
+          
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              onClick={handleReset}
+              disabled={currentStepIndex === 0}
+              className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs"
+              title="Reset to beginning"
+            >
+              ↺ Reset
+            </button>
+            <button
+              onClick={handlePrevious}
+              disabled={currentStepIndex === 0}
+              className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs"
+              title="Previous step"
+            >
+              ← Prev
+            </button>
+            <button
+              onClick={handleNext}
+              disabled={currentStepIndex >= steps.length - 1}
+              className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-xs"
+              title="Next step"
+            >
+              Next →
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Final Result */}
-      {isComplete && result && (
-        <div className={`p-6 rounded-lg border-2 ${
-          result.accepted 
-            ? 'bg-green-50 border-green-500' 
-            : 'bg-red-50 border-red-500'
-        }`}>
-          <h3 className={`text-xl font-bold mb-2 ${
-            result.accepted ? 'text-green-800' : 'text-red-800'
-          }`}>
-            {result.accepted ? '✅ String Accepted!' : '❌ String Rejected'}
-          </h3>
-          <p className="text-sm">
-            <strong>Final State:</strong> {result.currentState}
-            {result.accepted && ' (Accepting State)'}
-          </p>
+          {/* Final Result */}
+          {isComplete && result && (
+            <div 
+              className={`rounded-lg border-2 p-4 transform transition-all duration-500 ${
+                result.accepted 
+                  ? 'bg-gradient-to-br from-green-50 to-green-100 border-green-500 shadow-lg shadow-green-200' 
+                  : 'bg-gradient-to-br from-red-50 to-red-100 border-red-500 shadow-lg shadow-red-200'
+              }`}
+              style={{
+                animation: 'fadeInScale 0.5s ease-out'
+              }}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <div className={`text-2xl ${result.accepted ? 'animate-bounce' : 'animate-pulse'}`}>
+                  {result.accepted ? '✅' : '❌'}
+                </div>
+                <h3 className={`text-lg font-bold ${
+                  result.accepted ? 'text-green-800' : 'text-red-800'
+                }`}>
+                  {result.accepted ? 'Accepted!' : 'Rejected'}
+                </h3>
+              </div>
+              
+              <div className={`space-y-1.5 ${
+                result.accepted ? 'text-green-900' : 'text-red-900'
+              }`}>
+                <p className="text-xs">
+                  <strong>Input:</strong> <span className="font-mono bg-white px-1.5 py-0.5 rounded text-xs">{inputString}</span>
+                </p>
+                <p className="text-xs">
+                  <strong>Final State:</strong> <span className="font-mono bg-white px-1.5 py-0.5 rounded text-xs">{result.currentState}</span>
+                  {result.accepted && <span className="ml-1 text-xs font-semibold">⭐</span>}
+                </p>
+                <p className="text-xs">
+                  <strong>Steps:</strong> {steps.length}
+                </p>
+              </div>
+
+              <div className="mt-3 p-2 bg-white rounded border border-opacity-50">
+                <p className={`text-xs ${result.accepted ? 'text-green-800' : 'text-red-800'}`}>
+                  {result.accepted ? (
+                    <>✨ The string matches the pattern!</>
+                  ) : (
+                    <>💡 State "{result.currentState}" is not accepting.</>
+                  )}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Keyboard Shortcuts Guide */}
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+            <details className="cursor-pointer">
+              <summary className="text-sm font-semibold text-gray-700 hover:text-indigo-600 transition-colors">
+                ⌨️ Keyboard Shortcuts
+              </summary>
+              <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-gray-600">
+                <div className="flex items-center gap-2">
+                  <kbd className="px-2 py-1 bg-white rounded border border-gray-300 font-mono">→</kbd>
+                  <span>Next</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <kbd className="px-2 py-1 bg-white rounded border border-gray-300 font-mono">←</kbd>
+                  <span>Previous</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <kbd className="px-2 py-1 bg-white rounded border border-gray-300 font-mono">Space</kbd>
+                  <span>Play/Pause</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <kbd className="px-2 py-1 bg-white rounded border border-gray-300 font-mono">R</kbd>
+                  <span>Reset</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <kbd className="px-2 py-1 bg-white rounded border border-gray-300 font-mono">Home</kbd>
+                  <span>Start</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <kbd className="px-2 py-1 bg-white rounded border border-gray-300 font-mono">End</kbd>
+                  <span>Finish</span>
+                </div>
+              </div>
+            </details>
+          </div>
         </div>
-      )}
+        {/* End of Right Column */}
+      </div>
+      {/* End of Grid Layout */}
+
+      <style>{`
+        @keyframes fadeInScale {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+      `}</style>
     </div>
   )
 }

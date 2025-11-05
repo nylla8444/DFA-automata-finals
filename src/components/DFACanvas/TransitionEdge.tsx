@@ -55,6 +55,20 @@ export function TransitionEdge({
 
   return (
     <g className="transition-edge">
+      {/* Shadow line for active transitions */}
+      {isActive && (
+        <line
+          x1={startX}
+          y1={startY}
+          x2={endX}
+          y2={endY}
+          stroke="#4f46e5"
+          strokeWidth={strokeWidth + 4}
+          opacity="0.2"
+          className="transition-all duration-300"
+        />
+      )}
+
       {/* Arrow line */}
       <line
         x1={startX}
@@ -63,25 +77,42 @@ export function TransitionEdge({
         y2={endY}
         stroke={strokeColor}
         strokeWidth={strokeWidth}
-        markerEnd={isActive ? 'url(#arrowhead-active)' : 'url(#arrowhead)'}
+        markerEnd={isActive ? 'url(#arrowhead-active)' : isVisited ? 'url(#arrowhead-visited)' : 'url(#arrowhead)'}
         className="transition-all duration-300"
+        style={{
+          filter: isActive ? 'drop-shadow(0 0 4px rgba(79, 70, 229, 0.6))' : 'none'
+        }}
       />
+
+      {/* Animated flow dot for active transition */}
+      {isActive && (
+        <circle r="4" fill="#fbbf24" className="animate-flow">
+          <animateMotion
+            dur="1s"
+            repeatCount="indefinite"
+            path={`M ${startX} ${startY} L ${endX} ${endY}`}
+          />
+        </circle>
+      )}
 
       {/* Symbol label */}
       <g transform={`translate(${labelX}, ${labelY})`}>
         <circle
-          r="12"
+          r={isActive ? "14" : "12"}
           fill="white"
           stroke={strokeColor}
-          strokeWidth="1.5"
+          strokeWidth={isActive ? "2" : "1.5"}
           className="transition-all duration-300"
+          style={{
+            filter: isActive ? 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))' : 'none'
+          }}
         />
         <text
           textAnchor="middle"
           dy="0.35em"
-          fontSize="13"
-          fontWeight="600"
-          fill={isActive ? '#4f46e5' : '#374151'}
+          fontSize={isActive ? "14" : "13"}
+          fontWeight={isActive ? "700" : "600"}
+          fill={isActive ? '#4f46e5' : isVisited ? '#6366f1' : '#374151'}
           className="select-none transition-all duration-300"
         >
           {transition.symbol}
@@ -117,6 +148,20 @@ function SelfLoopEdge({
 
   return (
     <g className="self-loop-edge">
+      {/* Shadow circle for active transitions */}
+      {isActive && (
+        <circle
+          cx={loopCenterX}
+          cy={loopCenterY}
+          r={loopRadius}
+          fill="none"
+          stroke="#4f46e5"
+          strokeWidth={strokeWidth + 4}
+          opacity="0.2"
+          className="transition-all duration-300"
+        />
+      )}
+
       {/* Self-loop circle */}
       <circle
         cx={loopCenterX}
@@ -125,20 +170,44 @@ function SelfLoopEdge({
         fill="none"
         stroke={strokeColor}
         strokeWidth={strokeWidth}
-        markerEnd={isActive ? 'url(#arrowhead-active)' : 'url(#arrowhead)'}
+        markerEnd={isActive ? 'url(#arrowhead-active)' : isVisited ? 'url(#arrowhead-visited)' : 'url(#arrowhead)'}
         className="transition-all duration-300"
+        style={{
+          filter: isActive ? 'drop-shadow(0 0 4px rgba(79, 70, 229, 0.6))' : 'none'
+        }}
       />
+
+      {/* Animated flow dot for active self-loop */}
+      {isActive && (
+        <circle r="4" fill="#fbbf24">
+          <animateMotion
+            dur="1s"
+            repeatCount="indefinite"
+            path={`M ${loopCenterX} ${loopCenterY - loopRadius} 
+                   A ${loopRadius} ${loopRadius} 0 1 1 ${loopCenterX} ${loopCenterY - loopRadius}`}
+          />
+        </circle>
+      )}
 
       {/* Symbol label */}
       <g transform={`translate(${loopCenterX}, ${loopCenterY - loopRadius - 5})`}>
-        <circle r="12" fill="white" stroke={strokeColor} strokeWidth="1.5" />
+        <circle 
+          r={isActive ? "14" : "12"} 
+          fill="white" 
+          stroke={strokeColor} 
+          strokeWidth={isActive ? "2" : "1.5"}
+          className="transition-all duration-300"
+          style={{
+            filter: isActive ? 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))' : 'none'
+          }}
+        />
         <text
           textAnchor="middle"
           dy="0.35em"
-          fontSize="13"
-          fontWeight="600"
-          fill={isActive ? '#4f46e5' : '#374151'}
-          className="select-none"
+          fontSize={isActive ? "14" : "13"}
+          fontWeight={isActive ? "700" : "600"}
+          fill={isActive ? '#4f46e5' : isVisited ? '#6366f1' : '#374151'}
+          className="select-none transition-all duration-300"
         >
           {symbol}
         </text>
