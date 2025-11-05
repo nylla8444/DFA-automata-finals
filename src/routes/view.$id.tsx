@@ -95,13 +95,146 @@ function QuickTestResult({ dfa, inputString }: { dfa: DFA; inputString: string }
   )
 }
 
+/**
+ * StateTableView - Shows transition table in tabular format
+ */
+function StateTableView({ dfa }: { dfa: DFA }) {
+  // Build transition table
+  const transitionMap = new Map<string, Map<string, string>>()
+  
+  // Initialize map for all states
+  dfa.states.forEach(state => {
+    transitionMap.set(state.id, new Map())
+  })
+  
+  // Fill in transitions
+  dfa.transitions.forEach(transition => {
+    const stateMap = transitionMap.get(transition.fromStateId)
+    if (stateMap) {
+      const existing = stateMap.get(transition.symbol)
+      if (existing) {
+        stateMap.set(transition.symbol, `${existing}, ${transition.toStateId}`)
+      } else {
+        stateMap.set(transition.symbol, transition.toStateId)
+      }
+    }
+  })
+
+  return (
+    <div className="space-y-4">
+      {/* Table Description */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h3 className="font-semibold text-blue-900 mb-2">📊 Transition Table (δ)</h3>
+        <p className="text-sm text-blue-800">
+          This table shows the transition function δ(state, symbol) → next state for all states and input symbols.
+        </p>
+      </div>
+
+      {/* Transition Table */}
+      <div className="overflow-x-auto bg-white rounded-lg border-2 border-gray-300 shadow-lg">
+        <table className="min-w-full divide-y divide-gray-300">
+          <thead className="bg-gradient-to-r from-indigo-100 to-indigo-50">
+            <tr>
+              <th className="px-6 py-4 text-left text-sm font-bold text-gray-900 border-r-2 border-gray-300">
+                State
+              </th>
+              {dfa.alphabet.map(symbol => (
+                <th
+                  key={symbol}
+                  className="px-6 py-4 text-center text-sm font-bold text-gray-900 border-r border-gray-200"
+                >
+                  <span className="font-mono text-base">{symbol}</span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200 bg-white">
+            {dfa.states.map((state, idx) => {
+              const isInitial = state.id === dfa.initialStateId
+              const isAccepting = dfa.acceptingStateIds.includes(state.id)
+              const stateTransitions = transitionMap.get(state.id)
+
+              return (
+                <tr
+                  key={state.id}
+                  className={`hover:bg-gray-50 transition-colors ${
+                    idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                  }`}
+                >
+                  <td className="px-6 py-4 whitespace-nowrap border-r-2 border-gray-300">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-semibold text-gray-900">
+                        {state.label}
+                      </span>
+                      {isInitial && (
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold">
+                          Start
+                        </span>
+                      )}
+                      {isAccepting && (
+                        <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-semibold">
+                          Accept
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  {dfa.alphabet.map(symbol => {
+                    const nextState = stateTransitions?.get(symbol)
+                    return (
+                      <td
+                        key={symbol}
+                        className="px-6 py-4 text-center border-r border-gray-200"
+                      >
+                        {nextState ? (
+                          <span className="inline-block px-3 py-1 bg-indigo-50 border border-indigo-300 rounded font-mono text-sm text-indigo-900 font-semibold">
+                            {nextState}
+                          </span>
+                        ) : (
+                          <span className="text-red-400 text-xl">—</span>
+                        )}
+                      </td>
+                    )
+                  })}
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Legend */}
+      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <h4 className="font-semibold text-gray-800 mb-2 text-sm">Legend:</h4>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold">Start</span>
+            <span className="text-gray-600">Initial state</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-semibold">Accept</span>
+            <span className="text-gray-600">Accepting state</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-red-400 text-xl">—</span>
+            <span className="text-gray-600">No transition defined</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="bg-indigo-50 border border-indigo-300 rounded px-2 py-0.5 font-mono text-xs">q0</span>
+            <span className="text-gray-600">Next state</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function ViewPage() {
   const { id } = useParams({ from: '/view/$id' })
   const navigate = useNavigate()
   const [savedDFA, setSavedDFA] = useState<SavedDFA | null>(null)
   const [loading, setLoading] = useState(true)
   const [inputString, setInputString] = useState('')
-  const [activeTab, setActiveTab] = useState<'quick' | 'simulator'>('simulator')
+  const [activeTab, setActiveTab] = useState<'quick' | 'table' | 'simulator'>('simulator')
 
   useEffect(() => {
     const dfa = getDFAById(id)
@@ -211,6 +344,16 @@ function ViewPage() {
               Quick Test
             </button>
             <button
+              onClick={() => setActiveTab('table')}
+              className={`px-6 py-3 font-semibold transition-all ${
+                activeTab === 'table'
+                  ? 'text-indigo-600 border-b-2 border-indigo-600 -mb-0.5'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              State Table
+            </button>
+            <button
               onClick={() => setActiveTab('simulator')}
               className={`px-6 py-3 font-semibold transition-all ${
                 activeTab === 'simulator'
@@ -226,6 +369,13 @@ function ViewPage() {
           {activeTab === 'quick' && (
             <div className="mt-6">
               <QuickTestResult dfa={savedDFA.dfa} inputString={inputString} />
+            </div>
+          )}
+
+          {/* State Table Tab Content */}
+          {activeTab === 'table' && (
+            <div className="mt-6">
+              <StateTableView dfa={savedDFA.dfa} />
             </div>
           )}
         </div>
