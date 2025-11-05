@@ -233,7 +233,7 @@ function ViewPage() {
 
       {/* Full-Width Simulator Section */}
       {activeTab === 'simulator' && (
-        <div className="bg-gradient-to-br from-slate-50 to-slate-100 py-8">
+        <div className="bg-white  py-8">
           <div className="max-w-[1600px] mx-auto px-10">
             <div className="mb-6 flex items-center">
               <div className='mr-20'>

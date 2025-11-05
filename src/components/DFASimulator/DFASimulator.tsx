@@ -19,6 +19,10 @@ export function DFASimulator({ dfa, inputString }: DFASimulatorProps) {
   const [highlightedTransitionId, setHighlightedTransitionId] = useState<string>()
   const [visitedTransitionIds, setVisitedTransitionIds] = useState<string[]>([])
   const [animationSpeed, setAnimationSpeed] = useState(800) // milliseconds per step
+  const [zoomLevel, setZoomLevel] = useState(1) // zoom scale (1 = 100%)
+  const [isPanning, setIsPanning] = useState(false)
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 })
+  const [startPan, setStartPan] = useState({ x: 0, y: 0 })
 
   const engine = new DFAEngine(dfa)
 
@@ -206,13 +210,46 @@ export function DFASimulator({ dfa, inputString }: DFASimulatorProps) {
     )
   }
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsPanning(true)
+    setStartPan({
+      x: e.clientX - panOffset.x,
+      y: e.clientY - panOffset.y
+    })
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isPanning) return
+    setPanOffset({
+      x: e.clientX - startPan.x,
+      y: e.clientY - startPan.y
+    })
+  }
+
+  const handleMouseUp = () => {
+    setIsPanning(false)
+  }
+
+  const handleZoomIn = () => {
+    setZoomLevel(prev => Math.min(3, prev + 0.2))
+  }
+
+  const handleZoomOut = () => {
+    setZoomLevel(prev => Math.max(0.5, prev - 0.2))
+  }
+
+  const handleResetZoom = () => {
+    setZoomLevel(1)
+    setPanOffset({ x: 0, y: 0 })
+  }
+
   return (
     <div className="dfa-simulator">
       {/* Side-by-Side Layout: Diagram + Controls */}
       <div className="flex gap-4">
         {/* Left: Visualization - Takes remaining space */}
         <div 
-          className={`flex-1 overflow-hidden rounded-lg transition-all duration-500 ${
+          className={`flex-1 rounded-lg transition-all duration-500 relative ${
             isComplete && result
               ? result.accepted
                 ? 'border-4 border-green-500 shadow-[0_0_30px_rgba(34,197,94,0.6)]'
@@ -220,14 +257,63 @@ export function DFASimulator({ dfa, inputString }: DFASimulatorProps) {
               : 'border-2 border-gray-300'
           }`}
         >
-          <DFACanvas
-            dfa={dfa}
-            currentStateId={currentStep?.stateId}
-            visitedStateIds={visitedStateIds}
-            highlightedTransitionId={highlightedTransitionId}
-            visitedTransitionIds={visitedTransitionIds}
-            height={600}
-          />
+          {/* Zoom Controls */}
+          <div className="absolute top-4 right-4 z-10 flex gap-2 bg-white rounded-lg shadow-lg p-2 border border-gray-300">
+            <button
+              onClick={handleZoomIn}
+              className="px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded font-semibold text-sm transition-colors"
+              title="Zoom In"
+            >
+              🔍+
+            </button>
+            <button
+              onClick={handleResetZoom}
+              className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-semibold text-xs transition-colors min-w-[50px]"
+              title="Reset Zoom & Pan"
+            >
+              {Math.round(zoomLevel * 100)}%
+            </button>
+            <button
+              onClick={handleZoomOut}
+              className="px-3 py-1.5 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded font-semibold text-sm transition-colors"
+              title="Zoom Out"
+            >
+              🔍-
+            </button>
+          </div>
+
+          {/* Pan Instruction */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-10 bg-black bg-opacity-70 text-white text-xs px-3 py-1.5 rounded-full">
+            🖱️ Click & drag to pan • Use zoom buttons
+          </div>
+
+          {/* Zoomable & Pannable Canvas Container */}
+          <div
+            className={`overflow-hidden w-full h-[600px] ${isPanning ? 'cursor-grabbing' : 'cursor-grab'}`}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          >
+            <div
+              style={{
+                transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
+                transformOrigin: '0 0',
+                transition: isPanning ? 'none' : 'transform 0.1s ease-out',
+                width: '100%',
+                height: '600px'
+              }}
+            >
+              <DFACanvas
+                dfa={dfa}
+                currentStateId={currentStep?.stateId}
+                visitedStateIds={visitedStateIds}
+                highlightedTransitionId={highlightedTransitionId}
+                visitedTransitionIds={visitedTransitionIds}
+                height={600}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Right: Step Information & Controls - Fixed width */}

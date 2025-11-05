@@ -72,7 +72,7 @@ export function DFACanvas({
   const initialPos = positions.get(dfa.initialStateId)
 
   return (
-    <div className="dfa-canvas-container border-2 border-gray-300 rounded-lg overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="dfa-canvas-container overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100">
       <svg
         width="100%"
         height={height}
