@@ -105,8 +105,8 @@ function CreatePage() {
       <div className="relative z-10">
         <Navigation />
       </div>
-      <div className="max-w-7xl mx-auto px-6 pb-12 relative z-10">
-        <header className="text-center mb-10 pt-8">
+      <div className="max-w-6xl mx-auto px-8 pb-8 relative z-10">
+        <header className="text-center mb-8 pt-8">
           <h1 className="text-6xl font-extrabold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-4">
             Create New DFA
           </h1>
@@ -115,15 +115,15 @@ function CreatePage() {
           </p>
         </header>
 
-        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-10 mb-8 border border-blue-100">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
             <span className="text-4xl">📝</span>
             DFA Information
           </h2>
 
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div>
-              <label className="block text-base font-bold text-gray-800 mb-3">
+              <label className="block text-base font-bold text-gray-800 mb-2">
                 🏷️ DFA Name *
               </label>
               <input
@@ -136,7 +136,7 @@ function CreatePage() {
             </div>
 
             <div>
-              <label className="block text-base font-bold text-gray-800 mb-3">
+              <label className="block text-base font-bold text-gray-800 mb-2">
                 📄 Description
               </label>
               <textarea
@@ -150,14 +150,14 @@ function CreatePage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-10 mb-8 border border-blue-100">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
             <span className="text-4xl">🎨</span>
             Visual Editor
           </h2>
           
           {/* Import/Export Section */}
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-300 rounded-xl p-5 mb-6 shadow-sm">
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-300 rounded-xl p-5 mb-4 shadow-sm">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div className="flex flex-wrap items-center gap-3">
                 <span className="text-base font-bold text-gray-800">💾 Import/Export:</span>
@@ -192,7 +192,7 @@ function CreatePage() {
             </div>
           </div>
 
-          <p className="text-gray-700 mb-6 text-base font-medium bg-blue-50 p-4 rounded-lg border border-blue-200">
+          <p className="text-gray-700 mb-4 text-base font-medium bg-blue-50 p-4 rounded-lg border border-blue-200">
             💡 <strong>Tip:</strong> Click "Add State" to start building your DFA. You can drag states to reposition them.
           </p>
           <DFAEditor initialDFA={dfa} onChange={setDFA} />

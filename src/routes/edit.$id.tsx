@@ -112,26 +112,10 @@ function EditPage() {
 
   if (loading || !savedDFA || !currentDFA) {
     return (
-      <div className="min-h-screen w-full bg-[#fafafa] relative text-gray-900">
-        {/* Diagonal Grid with Light */}
-        <div
-          className="absolute inset-0 z-0 pointer-events-none"
-          style={{
-            backgroundImage: `
-              repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.1) 0, rgba(0, 0, 0, 0.1) 1px, transparent 1px, transparent 20px),
-              repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.1) 0, rgba(0, 0, 0, 0.1) 1px, transparent 1px, transparent 20px)
-            `,
-            backgroundSize: "40px 40px",
-          }}
-        />
-        <div className="relative z-10">
-          <Navigation />
-        </div>
-        <div className="flex items-center justify-center h-96 relative z-10">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 text-lg font-medium">Loading...</p>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <Navigation />
+        <div className="flex items-center justify-center h-96">
+          <p className="text-gray-500">Loading...</p>
         </div>
       </div>
     )
@@ -153,8 +137,8 @@ function EditPage() {
       <div className="relative z-10">
         <Navigation />
       </div>
-      <div className="max-w-7xl mx-auto px-6 pb-12 relative z-10">
-        <header className="text-center mb-10 pt-8">
+      <div className="max-w-6xl mx-auto px-8 pb-8 relative z-10">
+        <header className="text-center mb-8 pt-8">
           <h1 className="text-6xl font-extrabold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-4">
             Edit DFA
           </h1>
@@ -163,15 +147,15 @@ function EditPage() {
           </p>
         </header>
 
-        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-10 mb-8 border border-blue-100">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
             <span className="text-4xl">📝</span>
             DFA Information
           </h2>
 
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div>
-              <label className="block text-base font-bold text-gray-800 mb-3">
+              <label className="block text-base font-bold text-gray-800 mb-2">
                 🏷️ DFA Name *
               </label>
               <input
@@ -184,7 +168,7 @@ function EditPage() {
             </div>
 
             <div>
-              <label className="block text-base font-bold text-gray-800 mb-3">
+              <label className="block text-base font-bold text-gray-800 mb-2">
                 📄 Description
               </label>
               <textarea
@@ -198,13 +182,13 @@ function EditPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-10 mb-8 border border-blue-100">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
             <span className="text-4xl">🎨</span>
             Visual Editor
           </h2>
     {/* Import/Export Section */}
-      <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-300 rounded-xl p-5 mb-6 shadow-sm">
+      <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-300 rounded-xl p-5 mb-4 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-base font-bold text-gray-800">💾 Import/Export:</span>
@@ -239,7 +223,7 @@ function EditPage() {
         </div>
       </div>
 
-          <p className="text-gray-700 mb-6 text-base font-medium bg-blue-50 p-4 rounded-lg border border-blue-200">
+          <p className="text-gray-700 mb-4 text-base font-medium bg-blue-50 p-4 rounded-lg border border-blue-200">
             💡 <strong>Tip:</strong> Edit your DFA visually. Drag states to reposition, add/remove states and transitions.
           </p>
           <DFAEditor initialDFA={currentDFA} onChange={setCurrentDFA} />

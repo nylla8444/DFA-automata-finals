@@ -203,7 +203,7 @@ function App() {
       <div className="max-w-7xl mx-auto px-6 pb-12 relative z-10">
         <header className="text-center mb-12 pt-8">
           <h1 className="text-6xl font-extrabold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-4">
-            DFA Visualization Tool
+            DFA Visualizer Tool
           </h1>
           <p className="text-xl text-blue-700 font-medium">
             Deterministic Finite Automaton Simulator
