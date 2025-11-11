@@ -112,74 +112,105 @@ function EditPage() {
 
   if (loading || !savedDFA || !currentDFA) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-        <Navigation />
-        <div className="flex items-center justify-center h-96">
-          <p className="text-gray-500">Loading...</p>
+      <div className="min-h-screen w-full bg-[#fafafa] relative text-gray-900">
+        {/* Diagonal Grid with Light */}
+        <div
+          className="absolute inset-0 z-0 pointer-events-none"
+          style={{
+            backgroundImage: `
+              repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.1) 0, rgba(0, 0, 0, 0.1) 1px, transparent 1px, transparent 20px),
+              repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.1) 0, rgba(0, 0, 0, 0.1) 1px, transparent 1px, transparent 20px)
+            `,
+            backgroundSize: "40px 40px",
+          }}
+        />
+        <div className="relative z-10">
+          <Navigation />
+        </div>
+        <div className="flex items-center justify-center h-96 relative z-10">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600 text-lg font-medium">Loading...</p>
+          </div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <Navigation />
-      <div className="max-w-6xl mx-auto px-8 pb-8">
-        <header className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-indigo-900 mb-4">
+    <div className="min-h-screen w-full bg-[#fafafa] relative text-gray-900">
+      {/* Diagonal Grid with Light */}
+      <div
+        className="absolute inset-0 z-0 pointer-events-none"
+        style={{
+          backgroundImage: `
+            repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.1) 0, rgba(0, 0, 0, 0.1) 1px, transparent 1px, transparent 20px),
+            repeating-linear-gradient(-45deg, rgba(0, 0, 0, 0.1) 0, rgba(0, 0, 0, 0.1) 1px, transparent 1px, transparent 20px)
+          `,
+          backgroundSize: "40px 40px",
+        }}
+      />
+      <div className="relative z-10">
+        <Navigation />
+      </div>
+      <div className="max-w-7xl mx-auto px-6 pb-12 relative z-10">
+        <header className="text-center mb-10 pt-8">
+          <h1 className="text-6xl font-extrabold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent mb-4">
             Edit DFA
           </h1>
-          <p className="text-xl text-indigo-700">
+          <p className="text-xl text-blue-700 font-medium">
             Modify your Deterministic Finite Automaton
           </p>
         </header>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-10 mb-8 border border-blue-100">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+            <span className="text-4xl">📝</span>
             DFA Information
           </h2>
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                DFA Name *
+              <label className="block text-base font-bold text-gray-800 mb-3">
+                🏷️ DFA Name *
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="e.g., Binary Ending in 01"
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none"
+                className="w-full px-5 py-4 border-2 border-blue-300 rounded-xl focus:border-blue-600 focus:ring-4 focus:ring-blue-100 focus:outline-none text-lg transition-all shadow-sm hover:border-blue-400"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
+              <label className="block text-base font-bold text-gray-800 mb-3">
+                📄 Description
               </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Describe what your DFA accepts..."
                 rows={3}
-                className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none"
+                className="w-full px-5 py-4 border-2 border-blue-300 rounded-xl focus:border-blue-600 focus:ring-4 focus:ring-blue-100 focus:outline-none text-lg transition-all shadow-sm hover:border-blue-400"
               />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+        <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-10 mb-8 border border-blue-100">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
+            <span className="text-4xl">🎨</span>
             Visual Editor
           </h2>
     {/* Import/Export Section */}
-      <div className="bg-white border border-gray-300 rounded-lg p-3 mb-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-gray-700">Import/Export:</span>
+      <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-300 rounded-xl p-5 mb-6 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-base font-bold text-gray-800">💾 Import/Export:</span>
             <button
               onClick={handleExportJSON}
-              className="px-3 py-1.5 text-sm rounded font-medium bg-green-50 border border-green-300 text-green-700 hover:bg-green-100 transition-colors flex items-center gap-1.5"
+              className="px-4 py-2.5 text-sm rounded-lg font-bold bg-green-500 text-white hover:bg-green-600 transition-all shadow-md hover:shadow-lg transform hover:scale-105 flex items-center gap-2"
               title="Download DFA as JSON file"
             >
               <span>📥</span>
@@ -187,7 +218,7 @@ function EditPage() {
             </button>
             <button
               onClick={handleImportJSON}
-              className="px-3 py-1.5 text-sm rounded font-medium bg-blue-50 border border-blue-300 text-blue-700 hover:bg-blue-100 transition-colors flex items-center gap-1.5"
+              className="px-4 py-2.5 text-sm rounded-lg font-bold bg-blue-500 text-white hover:bg-blue-600 transition-all shadow-md hover:shadow-lg transform hover:scale-105 flex items-center gap-2"
               title="Load DFA from JSON file"
             >
               <span>📤</span>
@@ -195,21 +226,21 @@ function EditPage() {
             </button>
             <button
               onClick={handleCopyJSON}
-              className="px-3 py-1.5 text-sm rounded font-medium bg-purple-50 border border-purple-300 text-purple-700 hover:bg-purple-100 transition-colors flex items-center gap-1.5"
+              className="px-4 py-2.5 text-sm rounded-lg font-bold bg-purple-500 text-white hover:bg-purple-600 transition-all shadow-md hover:shadow-lg transform hover:scale-105 flex items-center gap-2"
               title="Copy JSON to clipboard"
             >
               <span>📋</span>
               <span>Copy JSON</span>
             </button>
           </div>
-          <div className="text-xs text-gray-500">
+          <div className="text-sm text-blue-800 font-medium">
             Save or load your DFA design
           </div>
         </div>
       </div>
 
-          <p className="text-gray-600 mb-4">
-            Edit your DFA visually. Drag states to reposition, add/remove states and transitions.
+          <p className="text-gray-700 mb-6 text-base font-medium bg-blue-50 p-4 rounded-lg border border-blue-200">
+            💡 <strong>Tip:</strong> Edit your DFA visually. Drag states to reposition, add/remove states and transitions.
           </p>
           <DFAEditor initialDFA={currentDFA} onChange={setCurrentDFA} />
         </div>
@@ -217,16 +248,16 @@ function EditPage() {
         <div className="flex gap-4 justify-end">
           <button
             onClick={() => navigate({ to: '/view/$id', params: { id } })}
-            className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+            className="px-8 py-4 bg-gray-200 text-gray-800 rounded-xl font-bold hover:bg-gray-300 transition-all shadow-md hover:shadow-lg"
           >
-            Cancel
+            ❌ Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={saving || !name.trim()}
-            className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-bold hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed disabled:transform-none"
           >
-            {saving ? 'Saving...' : 'Save Changes'}
+            {saving ? '💾 Saving...' : '✅ Save Changes'}
           </button>
         </div>
       </div>
