@@ -391,10 +391,10 @@ export function DFASimulator({ dfa, inputString }: DFASimulatorProps) {
               Speed:
             </label>
             <span className="text-xs text-gray-700 font-bold">
-              {animationSpeed === 200 ? '🚀 Fast' : 
-               animationSpeed === 500 ? '⚡ Medium' :
-               animationSpeed === 800 ? '🐢 Normal' :
-               animationSpeed === 1200 ? '🐌 Slow' : 'Custom'}
+              {animationSpeed === 200 ? 'Fast' : 
+               animationSpeed === 500 ? 'Medium' :
+               animationSpeed === 800 ? 'Normal' :
+               animationSpeed === 1200 ? 'Slow' : 'Custom'}
             </span>
           </div>
           <input
@@ -493,7 +493,7 @@ export function DFASimulator({ dfa, inputString }: DFASimulatorProps) {
               <div className="mt-3 p-2 bg-white rounded border border-opacity-50">
                 <p className={`text-xs ${result.accepted ? 'text-green-800' : 'text-red-800'}`}>
                   {result.accepted ? (
-                    <>✨ The string matches the pattern!</>
+                    <>The string matches the pattern!</>
                   ) : (
                     <>💡 State "{result.currentState}" is not accepting.</>
                   )}

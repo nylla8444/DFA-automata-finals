@@ -117,7 +117,6 @@ function CreatePage() {
 
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
           <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-            <span className="text-4xl">📝</span>
             DFA Information
           </h2>
 
@@ -152,7 +151,6 @@ function CreatePage() {
 
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-6">
           <h2 className="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-            <span className="text-4xl">🎨</span>
             Visual Editor
           </h2>
           
