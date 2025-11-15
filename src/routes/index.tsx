@@ -41,7 +41,6 @@ function StateTableView({ dfa }: { dfa: DFA }) {
       {/* Table Description */}
       <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-300 rounded-xl p-5 shadow-sm">
         <h3 className="font-bold text-blue-900 mb-2 text-lg flex items-center gap-2">
-          <span className="text-2xl">📊</span>
           Transition Table (δ)
         </h3>
         <p className="text-sm text-blue-800">
@@ -212,13 +211,12 @@ function App() {
 
         <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-10 mb-8 border border-blue-100">
           <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-            <span className="text-4xl">✨</span>
             Interactive DFA Simulator
           </h2>
           
           <div className="mb-8">
             <label className="block text-base font-bold text-gray-800 mb-3">
-              📚 Select DFA from Collection:
+              Select DFA from Collection:
             </label>
             {savedDFAs.length > 0 ? (
               <select
@@ -249,7 +247,7 @@ function App() {
             <>
               <div className="mb-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-3">
-                  🎯 Current DFA: {currentSavedDFA.name}
+                  Current DFA: {currentSavedDFA.name}
                 </h3>
                 <p className="text-gray-600 mb-4 text-base">{currentSavedDFA.description}</p>
                 <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-xl border-2 border-blue-200 shadow-sm">
@@ -283,7 +281,7 @@ function App() {
 
               <div className="mb-8">
                 <label className="block text-base font-bold text-gray-800 mb-3">
-                  ⌨️ Test Input String:
+                  Test Input String:
                 </label>
                 <input
                   type="text"
@@ -304,7 +302,7 @@ function App() {
                       : 'text-gray-600 hover:bg-blue-100 hover:text-blue-700'
                   }`}
                 >
-                  ⚡ Quick Test
+                  Quick Test
                 </button>
                 <button
                   onClick={() => setActiveTab('table')}
@@ -314,7 +312,7 @@ function App() {
                       : 'text-gray-600 hover:bg-blue-100 hover:text-blue-700'
                   }`}
                 >
-                  📊 State Table
+                  State Table
                 </button>
                 <button
                   onClick={() => setActiveTab('simulator')}
@@ -324,7 +322,7 @@ function App() {
                       : 'text-gray-600 hover:bg-blue-100 hover:text-blue-700'
                   }`}
                 >
-                  🎮 Step-by-Step Simulator
+                  Step-by-Step Simulator
                 </button>
               </div>
 

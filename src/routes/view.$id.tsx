@@ -125,7 +125,6 @@ function StateTableView({ dfa }: { dfa: DFA }) {
       {/* Table Description */}
       <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-300 rounded-xl p-5 shadow-sm">
         <h3 className="font-bold text-blue-900 mb-2 text-lg flex items-center gap-2">
-          <span className="text-2xl">📊</span>
           Transition Table (δ)
         </h3>
         <p className="text-sm text-blue-800">
@@ -315,7 +314,6 @@ function ViewPage() {
 
         <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-10 mb-8 border border-blue-100">
           <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-            <span className="text-4xl">📊</span>
             DFA Details
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
@@ -348,13 +346,11 @@ function ViewPage() {
 
         <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-10 mb-8 border border-blue-100">
           <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-3">
-            <span className="text-4xl">🧪</span>
             Test This DFA
           </h2>
-          
           <div>
             <label className="block text-base font-bold text-gray-800 mb-3">
-              ⌨️ Input String:
+              Input String:
             </label>
             <input
               type="text"
@@ -375,7 +371,7 @@ function ViewPage() {
                   : 'text-gray-600 hover:bg-blue-100 hover:text-blue-700'
               }`}
             >
-              ⚡ Quick Test
+              Quick Test
             </button>
             <button
               onClick={() => setActiveTab('table')}
@@ -385,7 +381,7 @@ function ViewPage() {
                   : 'text-gray-600 hover:bg-blue-100 hover:text-blue-700'
               }`}
             >
-              📊 State Table
+              State Table
             </button>
             <button
               onClick={() => setActiveTab('simulator')}
@@ -395,7 +391,7 @@ function ViewPage() {
                   : 'text-gray-600 hover:bg-blue-100 hover:text-blue-700'
               }`}
             >
-              🎮 Step-by-Step Simulator
+              Step-by-Step Simulator
             </button>
           </div>
 
@@ -422,7 +418,6 @@ function ViewPage() {
             <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <h2 className="text-4xl font-bold text-gray-900 mb-3 flex items-center gap-3">
-                  <span className="text-5xl">🎮</span>
                   Step-by-Step Simulator
                 </h2>
                 <p className="text-gray-700 text-lg font-medium">
@@ -435,7 +430,6 @@ function ViewPage() {
                   onClick={() => navigate({ to: '/edit/$id', params: { id } })}
                   className="px-8 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-bold hover:from-green-700 hover:to-green-800 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
                 >
-                  <span className="text-xl">✏️</span>
                   Edit DFA
                 </button>
               </div>

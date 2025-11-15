@@ -10,7 +10,6 @@ export function Navigation() {
               to="/" 
               className="flex items-center space-x-2 text-2xl font-bold text-white hover:text-blue-100 transition-all hover:scale-105"
             >
-              <span className="text-3xl">⚡</span>
               <span>DFA Visualizer</span>
             </Link>
             <div className="hidden md:flex space-x-2">
@@ -18,13 +17,13 @@ export function Navigation() {
                 to="/"
                 className="[&.active]:bg-blue-500 [&.active]:text-white text-blue-50 hover:bg-blue-500 hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:shadow-md"
               >
-                🏠 Simulator
+                Simulator
               </Link>
               <Link
                 to="/collection"
                 className="[&.active]:bg-blue-500 [&.active]:text-white text-blue-50 hover:bg-blue-500 hover:text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:shadow-md"
               >
-                📚 Collection
+                Collection
               </Link>
               <Link
                 to="/create"

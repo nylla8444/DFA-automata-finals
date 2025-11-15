@@ -116,7 +116,6 @@ function CollectionPage() {
                 className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-200 border border-blue-100 hover:border-blue-300 transform hover:scale-105"
               >
                 <h3 className="text-2xl font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <span className="text-2xl">⚡</span>
                   {savedDFA.name}
                 </h3>
                 <p className="text-gray-600 mb-4 line-clamp-2 text-base">
@@ -144,14 +143,14 @@ function CollectionPage() {
                     params={{ id: savedDFA.id }}
                     className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg text-center font-bold hover:bg-blue-700 transition-all shadow-md hover:shadow-lg"
                   >
-                    👁️ View
+                    View
                   </Link>
                   <Link
                     to="/edit/$id"
                     params={{ id: savedDFA.id }}
                     className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg text-center font-bold hover:bg-green-700 transition-all shadow-md hover:shadow-lg"
                   >
-                    ✏️ Edit
+                    Edit
                   </Link>
                   <button
                     onClick={() => handleDelete(savedDFA.id)}
